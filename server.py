@@ -18,7 +18,7 @@ app = Flask(__name__, static_folder=str(APP_DIR / "static"), static_url_path="/s
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
 
 LEMONFOX_URL = "https://api.lemonfox.ai/v1/audio/transcriptions"
-AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".webm", ".mp4", ".ogg", ".flac", ".aac", ".mpga"}
+AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".webm", ".mp4", ".ogg", ".flac", ".aac", ".mpga", ".opus"}
 
 
 def get_api_key():
