@@ -23,65 +23,56 @@
     --success-dim: rgba(126,188,106,0.12);
     --blue: #6a9ebc;
     --blue-dim: rgba(106,158,188,0.12);
+    --red-yt: #cc3333;
     --radius: 12px;
     --font-display: 'Cormorant Garamond', 'Georgia', serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: var(--font-display);
-    min-height: 100vh; overflow-x: hidden;
-  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; overflow-x: hidden; }
   body::before {
     content: ''; position: fixed; inset: 0; opacity: 0.03;
-    background-image:
-      radial-gradient(circle at 25% 25%, var(--gold) 1px, transparent 1px),
-      radial-gradient(circle at 75% 75%, var(--gold) 0.5px, transparent 0.5px);
-    background-size: 50px 50px, 30px 30px;
-    pointer-events: none; z-index: 0;
+    background-image: radial-gradient(circle at 25% 25%, var(--gold) 1px, transparent 1px), radial-gradient(circle at 75% 75%, var(--gold) 0.5px, transparent 0.5px);
+    background-size: 50px 50px, 30px 30px; pointer-events: none; z-index: 0;
   }
   .app { position: relative; z-index: 1; max-width: 620px; margin: 0 auto; padding: 48px 28px 40px; }
 
-  /* Header */
   .header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; animation: fadeDown 0.6s ease; }
-  .logo {
-    width: 50px; height: 50px; border-radius: 14px;
-    background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
+  .logo { width: 50px; height: 50px; border-radius: 14px; background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .header h1 { font-size: 26px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; line-height: 1.1; }
   .header p { font-size: 14px; color: var(--text-dim); font-style: italic; margin-top: 2px; }
 
-  /* Tabs */
-  .tabs {
-    display: flex; gap: 0; margin-bottom: 28px;
-    border-bottom: 1px solid rgba(200,169,126,0.12);
-    animation: fadeUp 0.5s ease;
+  /* Nav tabs */
+  .nav-tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid rgba(200,169,126,0.12); animation: fadeUp 0.5s ease; }
+  .nav-tab {
+    padding: 10px 20px; font-size: 14px; font-weight: 600; font-family: var(--font-display);
+    color: var(--text-faint); cursor: pointer; border: none; background: none;
+    border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.3px;
   }
-  .tab {
-    padding: 10px 20px; font-size: 14px; font-weight: 600;
-    font-family: var(--font-display);
-    color: var(--text-faint); cursor: pointer;
-    border: none; background: none;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s; letter-spacing: 0.3px;
-  }
-  .tab:hover { color: var(--text-dim); }
-  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-  .tab-badge {
+  .nav-tab:hover { color: var(--text-dim); }
+  .nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .nav-badge {
     display: inline-flex; align-items: center; justify-content: center;
-    min-width: 18px; height: 18px; padding: 0 5px;
-    border-radius: 9px; font-size: 10px;
-    font-family: var(--font-mono); font-weight: 500;
-    background: var(--gold-dim); color: var(--gold);
-    margin-left: 6px; vertical-align: middle;
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    font-size: 10px; font-family: var(--font-mono); font-weight: 500;
+    background: var(--gold-dim); color: var(--gold); margin-left: 6px; vertical-align: middle;
   }
 
   .section { margin-bottom: 24px; }
   .label { display: block; font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
 
-  /* Options */
+  /* Source tabs (Audio / YouTube) */
+  .source-tabs { display: flex; gap: 0; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(200,169,126,0.15); }
+  .source-tab {
+    flex: 1; padding: 11px 16px; font-size: 14px; font-weight: 600; font-family: var(--font-display);
+    color: var(--text-faint); cursor: pointer; border: none; background: var(--surface);
+    transition: all 0.2s; text-align: center; letter-spacing: 0.3px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .source-tab:hover { color: var(--text-dim); background: var(--surface2); }
+  .source-tab.active { color: var(--text); background: var(--gold-dim); }
+  .source-tab svg { flex-shrink: 0; }
+
   .options-row { display: flex; gap: 16px; align-items: flex-end; }
   .select-wrap { flex: 1; }
   .select {
@@ -91,10 +82,7 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%238a7e6e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 12px center;
   }
-  .checkbox-label {
-    display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim);
-    cursor: pointer; white-space: nowrap; padding-bottom: 6px; user-select: none;
-  }
+  .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); cursor: pointer; white-space: nowrap; padding-bottom: 6px; user-select: none; }
   .checkbox-label input { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; }
 
   /* Drop zone */
@@ -110,28 +98,30 @@
   .drop-formats { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); letter-spacing: 0.5px; }
   .drop-hint { font-size: 12px; color: var(--text-faint); margin-top: 4px; font-style: italic; }
 
+  /* YouTube input */
+  .yt-input-wrap { display: flex; gap: 8px; margin-bottom: 16px; }
+  .yt-input {
+    flex: 1; padding: 12px 14px; font-family: var(--font-mono); font-size: 13px;
+    background: var(--surface); border: 1px solid rgba(200,169,126,0.2);
+    border-radius: 8px; color: var(--text); outline: none; transition: border-color 0.2s;
+  }
+  .yt-input:focus { border-color: var(--gold); }
+  .yt-input::placeholder { color: var(--text-faint); }
+  .yt-status { text-align: center; padding: 20px 0; }
+  .yt-status-text { font-size: 13px; color: var(--text-dim); font-style: italic; }
+  .yt-spinner { width: 24px; height: 24px; border: 2px solid rgba(200,169,126,0.12); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 12px auto 0; }
+
   /* Queue */
   .queue-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .queue-title { font-size: 14px; font-weight: 600; color: var(--text-dim); }
   .queue-count { font-size: 12px; font-family: var(--font-mono); color: var(--text-faint); }
   .queue-list { display: flex; flex-direction: column; gap: 8px; }
-  .queue-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-    background: var(--surface); border: 1px solid rgba(200,169,126,0.1);
-    border-radius: 10px; transition: all 0.25s ease; position: relative; overflow: hidden;
-  }
+  .queue-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface); border: 1px solid rgba(200,169,126,0.1); border-radius: 10px; transition: all 0.25s ease; position: relative; overflow: hidden; }
   .queue-item.active { border-color: rgba(200,169,126,0.3); }
   .queue-item.done { border-color: rgba(126,188,106,0.25); }
   .queue-item.error { border-color: rgba(180,80,60,0.25); }
-  .queue-item-progress {
-    position: absolute; left: 0; top: 0; bottom: 0;
-    background: rgba(200,169,126,0.06); transition: width 0.3s ease; pointer-events: none;
-  }
-  .qi-icon {
-    width: 28px; height: 28px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; flex-shrink: 0; position: relative; z-index: 1;
-  }
+  .queue-item-progress { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(200,169,126,0.06); transition: width 0.3s ease; pointer-events: none; }
+  .qi-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; position: relative; z-index: 1; }
   .qi-icon.pending { background: var(--gold-dim); color: var(--gold); }
   .qi-icon.active { background: var(--blue-dim); }
   .qi-icon.done { background: var(--success-dim); color: var(--success); }
@@ -140,67 +130,37 @@
   .qi-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .qi-meta { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
   .qi-status { font-size: 11px; font-family: var(--font-mono); white-space: nowrap; flex-shrink: 0; position: relative; z-index: 1; }
-  .qi-status.pending { color: var(--text-faint); }
-  .qi-status.active { color: var(--blue); }
-  .qi-status.done { color: var(--success); }
-  .qi-status.error { color: var(--danger); }
-  .qi-remove {
-    background: none; border: none; color: var(--text-faint); cursor: pointer;
-    font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: all 0.2s;
-    position: relative; z-index: 1;
-  }
+  .qi-status.pending { color: var(--text-faint); } .qi-status.active { color: var(--blue); } .qi-status.done { color: var(--success); } .qi-status.error { color: var(--danger); }
+  .qi-remove { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; position: relative; z-index: 1; }
   .qi-remove:hover { color: var(--danger); background: var(--danger-bg); }
-  .queue-add {
-    display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px;
-    border: 1px dashed rgba(200,169,126,0.15); border-radius: 8px;
-    font-size: 12px; color: var(--text-faint); cursor: pointer; transition: all 0.2s; margin-top: 10px;
-  }
+  .queue-add { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border: 1px dashed rgba(200,169,126,0.15); border-radius: 8px; font-size: 12px; color: var(--text-faint); cursor: pointer; transition: all 0.2s; margin-top: 10px; }
   .queue-add:hover { border-color: var(--gold); color: var(--gold); }
 
   /* Buttons */
-  .btn-sm {
-    padding: 5px 12px; font-size: 11px; font-family: var(--font-display); font-weight: 600;
-    background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2);
-    border-radius: 6px; color: var(--gold); cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
-  }
+  .btn-sm { padding: 5px 12px; font-size: 11px; font-family: var(--font-display); font-weight: 600; background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2); border-radius: 6px; color: var(--gold); cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; }
   .btn-sm:hover { background: rgba(200,169,126,0.25); }
   .btn-sm.danger { color: var(--danger); border-color: rgba(180,80,60,0.25); background: var(--danger-bg); }
   .btn-sm.danger:hover { background: rgba(180,80,60,0.2); }
-  .btn-primary {
-    width: 100%; padding: 15px; font-size: 16px; font-weight: 700; font-family: var(--font-display);
-    background: linear-gradient(135deg, var(--gold) 0%, #a68b5b 100%);
-    border: none; border-radius: var(--radius); color: var(--bg); cursor: pointer;
-    letter-spacing: 0.5px; transition: transform 0.15s, box-shadow 0.25s;
-    box-shadow: 0 4px 24px var(--gold-glow); margin-top: 4px;
-  }
+  .btn-primary { width: 100%; padding: 15px; font-size: 16px; font-weight: 700; font-family: var(--font-display); background: linear-gradient(135deg, var(--gold) 0%, #a68b5b 100%); border: none; border-radius: var(--radius); color: var(--bg); cursor: pointer; letter-spacing: 0.5px; transition: transform 0.15s, box-shadow 0.25s; box-shadow: 0 4px 24px var(--gold-glow); margin-top: 4px; }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(200,169,126,0.35); }
   .btn-primary:active { transform: translateY(0); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .btn-row { display: flex; gap: 8px; margin-top: 4px; }
   .btn-row .btn-primary { flex: 1; }
-  .btn-secondary {
-    flex: 1; padding: 15px; font-size: 14px; font-weight: 600; font-family: var(--font-display);
-    background: transparent; border: 1px solid rgba(200,169,126,0.25); border-radius: var(--radius);
-    color: var(--text-dim); cursor: pointer; transition: all 0.2s;
-  }
+  .btn-secondary { flex: 1; padding: 15px; font-size: 14px; font-weight: 600; font-family: var(--font-display); background: transparent; border: 1px solid rgba(200,169,126,0.25); border-radius: var(--radius); color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* Progress */
   .global-progress { display: flex; flex-direction: column; gap: 10px; padding: 16px 0; }
   .global-bar { width: 100%; height: 5px; border-radius: 3px; background: rgba(200,169,126,0.1); overflow: hidden; }
   .global-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), #dfc39e); transition: width 0.3s ease; }
   .global-text { font-size: 13px; color: var(--text-dim); font-style: italic; text-align: center; }
 
-  /* Results & History cards */
+  /* Results & cards */
   .results-section { margin-top: 16px; animation: fadeUp 0.4s ease; }
   .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
   .results-title { font-size: 18px; font-weight: 700; color: var(--gold); }
   .results-actions { display: flex; gap: 8px; }
-  .btn-action {
-    padding: 6px 14px; font-size: 12px; font-family: var(--font-display); font-weight: 600;
-    background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2);
-    border-radius: 6px; color: var(--text-dim); cursor: pointer; transition: all 0.2s;
-  }
+  .btn-action { padding: 6px 14px; font-size: 12px; font-family: var(--font-display); font-weight: 600; background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2); border-radius: 6px; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
   .btn-action:hover { background: rgba(200,169,126,0.25); color: var(--gold); }
   .result-card { background: var(--surface); border: 1px solid rgba(200,169,126,0.1); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
   .rc-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; user-select: none; transition: background 0.2s; }
@@ -212,86 +172,52 @@
   .rc-toggle.open { transform: rotate(180deg); }
   .rc-body { padding: 0 16px 16px; display: none; }
   .rc-body.open { display: block; }
-  .rc-body pre {
-    font-family: var(--font-display); font-size: 14px; line-height: 1.75; color: var(--text);
-    white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto;
-    padding: 12px 16px; background: rgba(200,169,126,0.03); border-radius: 8px;
-  }
+  .rc-body pre { font-family: var(--font-display); font-size: 14px; line-height: 1.75; color: var(--text); white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; padding: 12px 16px; background: rgba(200,169,126,0.03); border-radius: 8px; }
   .rc-actions { display: flex; gap: 6px; margin-top: 10px; }
-  .btn-new {
-    margin-top: 16px; width: 100%; padding: 13px; font-size: 14px;
-    font-family: var(--font-display); font-weight: 600; background: transparent;
-    border: 1px solid rgba(200,169,126,0.2); border-radius: var(--radius);
-    color: var(--text-dim); cursor: pointer; transition: all 0.2s;
-  }
+  .btn-new { margin-top: 16px; width: 100%; padding: 13px; font-size: 14px; font-family: var(--font-display); font-weight: 600; background: transparent; border: 1px solid rgba(200,169,126,0.2); border-radius: var(--radius); color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
   .btn-new:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* History empty state */
-  .empty-state {
-    text-align: center; padding: 48px 24px;
-    color: var(--text-faint); font-style: italic; font-size: 15px;
-  }
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text-faint); font-style: italic; font-size: 15px; }
   .empty-state-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
-
-  /* Error banner */
-  .error-banner {
-    background: var(--danger-bg); border: 1px solid rgba(180,80,60,0.25);
-    border-radius: var(--radius); padding: 14px 18px; text-align: center;
-    font-size: 14px; color: var(--danger); margin-bottom: 24px;
-  }
-
+  .error-banner { background: var(--danger-bg); border: 1px solid rgba(180,80,60,0.25); border-radius: var(--radius); padding: 14px 18px; text-align: center; font-size: 14px; color: var(--danger); margin-bottom: 24px; }
   .footer { margin-top: 36px; text-align: center; font-size: 11px; color: var(--text-faint); font-style: italic; }
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: var(--surface2); border: 1px solid var(--gold-dim);
-    padding: 10px 24px; border-radius: 8px; font-size: 13px; color: var(--gold);
-    pointer-events: none; opacity: 0; transition: all 0.3s ease; z-index: 100;
-  }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--gold-dim); padding: 10px 24px; border-radius: 8px; font-size: 13px; color: var(--gold); pointer-events: none; opacity: 0; transition: all 0.3s ease; z-index: 100; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .mini-spinner {
-    width: 14px; height: 14px; border: 2px solid rgba(106,158,188,0.2);
-    border-top-color: var(--blue); border-radius: 50%;
-    animation: spin 0.8s linear infinite; display: inline-block;
-  }
-  pre::-webkit-scrollbar { width: 6px; }
-  pre::-webkit-scrollbar-track { background: transparent; }
-  pre::-webkit-scrollbar-thumb { background: rgba(200,169,126,0.2); border-radius: 3px; }
+  .mini-spinner { width: 14px; height: 14px; border: 2px solid rgba(106,158,188,0.2); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+  pre::-webkit-scrollbar { width: 6px; } pre::-webkit-scrollbar-track { background: transparent; } pre::-webkit-scrollbar-thumb { background: rgba(200,169,126,0.2); border-radius: 3px; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @media (max-width: 500px) {
-    .app { padding: 32px 18px 32px; }
-    .header h1 { font-size: 22px; }
-    .options-row { flex-direction: column; gap: 12px; }
-    .btn-row { flex-direction: column; }
-  }
+  @media (max-width: 500px) { .app { padding: 32px 18px 32px; } .header h1 { font-size: 22px; } .options-row { flex-direction: column; gap: 12px; } .btn-row { flex-direction: column; } }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div class="logo">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <circle cx="14" cy="14" r="13" stroke="#c8a97e" stroke-width="2"/>
-        <path d="M10 9v10M14 7v14M18 10v8" stroke="#c8a97e" stroke-width="2.2" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div>
-      <h1>Transcriptor</h1>
-      <p>Audio a texto con Lemonfox AI</p>
-    </div>
+    <div class="logo"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="#c8a97e" stroke-width="2"/><path d="M10 9v10M14 7v14M18 10v8" stroke="#c8a97e" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+    <div><h1>Transcriptor</h1><p>Audio a texto con Lemonfox AI</p></div>
   </div>
-
   <div id="status-banner"></div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" id="tab-transcribe" onclick="switchTab('transcribe')">Transcribir</button>
-    <button class="tab" id="tab-history" onclick="switchTab('history')">Historial <span class="tab-badge" id="history-badge" style="display:none">0</span></button>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="nav-transcribe" onclick="switchNav('transcribe')">Transcribir</button>
+    <button class="nav-tab" id="nav-history" onclick="switchNav('history')">Historial <span class="nav-badge" id="history-badge" style="display:none">0</span></button>
   </div>
 
-  <!-- Transcribe view -->
+  <!-- TRANSCRIBE VIEW -->
   <div id="view-transcribe">
+    <!-- Source tabs -->
+    <div class="source-tabs">
+      <button class="source-tab active" id="src-file" onclick="switchSource('file')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 1h5l4 4v9a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M9 1v4h4" stroke="currentColor" stroke-width="1.3"/></svg>
+        Archivo de audio
+      </button>
+      <button class="source-tab" id="src-youtube" onclick="switchSource('youtube')">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect x="1" y="1" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M7 4.5v5l4.5-2.5L7 4.5z" fill="currentColor"/></svg>
+        YouTube
+      </button>
+    </div>
+
     <div class="section">
       <div class="options-row">
         <div class="select-wrap">
@@ -312,17 +238,34 @@
         </label>
       </div>
     </div>
-    <div class="section">
-      <div class="drop-zone" id="drop-zone">
-        <input type="file" id="file-input" accept=".m4a,.mp3,.wav,.webm,.mp4,.ogg,.flac,.aac,.mpga,.opus" hidden multiple>
-        <div id="drop-content"></div>
+
+    <!-- FILE SOURCE -->
+    <div id="source-file">
+      <div class="section">
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" id="file-input" accept=".m4a,.mp3,.wav,.webm,.mp4,.ogg,.flac,.aac,.mpga,.opus" hidden multiple>
+          <div id="drop-content"></div>
+        </div>
       </div>
+      <div id="action-area"></div>
     </div>
-    <div id="action-area"></div>
+
+    <!-- YOUTUBE SOURCE -->
+    <div id="source-youtube" style="display:none">
+      <div class="section">
+        <label class="label">Enlace de YouTube</label>
+        <div class="yt-input-wrap">
+          <input class="yt-input" type="text" id="yt-url" placeholder="https://www.youtube.com/watch?v=...">
+          <button class="btn-primary" style="width:auto;margin:0;padding:12px 24px;font-size:14px" id="yt-btn" onclick="transcribeYoutube()">Transcribir</button>
+        </div>
+      </div>
+      <div id="yt-status-area"></div>
+    </div>
+
     <div id="result-area"></div>
   </div>
 
-  <!-- History view -->
+  <!-- HISTORY VIEW -->
   <div id="view-history" style="display:none">
     <div id="history-content"></div>
   </div>
@@ -332,325 +275,226 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── State ──
-let state = { ready: false, queue: [], globalStatus: 'idle', currentTab: 'transcribe' };
-let nextId = 1;
-let expandedCards = new Set();
-let expandedHistory = new Set();
+let state = { ready: false, queue: [], globalStatus: 'idle', currentNav: 'transcribe', source: 'file', ytBusy: false };
+let nextId = 1, expandedCards = new Set(), expandedHistory = new Set();
 const VALID_EXTS = ['.m4a','.mp3','.wav','.webm','.mp4','.ogg','.flac','.aac','.mpga','.opus'];
 
-// ── Helpers ──
-function fmtBytes(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-  return (b/1048576).toFixed(1) + ' MB';
-}
+function fmtBytes(b) { if(b<1024)return b+' B'; if(b<1048576)return(b/1024).toFixed(1)+' KB'; return(b/1048576).toFixed(1)+' MB'; }
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function showToast(m) {
-  const t = document.getElementById('toast');
-  t.textContent = m; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+function fmtDate(ts) { const d=new Date(ts); const day=String(d.getDate()).padStart(2,'0'); const mon=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]; return day+' '+mon+' '+d.getFullYear()+' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+// History
+function getHistory() { try { return JSON.parse(localStorage.getItem('tfx_history')||'[]'); } catch(e) { return []; } }
+function saveToHistory(filename, transcript, lang, spk) {
+  const h = getHistory();
+  h.unshift({ id: Date.now()+'_'+Math.random().toString(36).slice(2,8), filename, transcript, language: lang, speakers: spk, date: Date.now() });
+  if (h.length > 100) h.length = 100;
+  localStorage.setItem('tfx_history', JSON.stringify(h));
+  updateBadge();
 }
-function fmtDate(ts) {
-  const d = new Date(ts);
-  const day = d.getDate().toString().padStart(2,'0');
-  const mon = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()];
-  const year = d.getFullYear();
-  const h = d.getHours().toString().padStart(2,'0');
-  const min = d.getMinutes().toString().padStart(2,'0');
-  return `${day} ${mon} ${year} · ${h}:${min}`;
+function deleteFromHistory(id) { const h=getHistory().filter(x=>x.id!==id); localStorage.setItem('tfx_history',JSON.stringify(h)); updateBadge(); renderHistory(); }
+function clearHistory() { if(!confirm('¿Borrar todo el historial?'))return; localStorage.removeItem('tfx_history'); updateBadge(); renderHistory(); showToast('Historial borrado'); }
+function updateBadge() { const c=getHistory().length; const b=document.getElementById('history-badge'); if(c>0){b.textContent=c;b.style.display='inline-flex';}else{b.style.display='none';} }
+
+// Navigation
+function switchNav(tab) {
+  state.currentNav = tab;
+  document.getElementById('nav-transcribe').classList.toggle('active',tab==='transcribe');
+  document.getElementById('nav-history').classList.toggle('active',tab==='history');
+  document.getElementById('view-transcribe').style.display = tab==='transcribe'?'':'none';
+  document.getElementById('view-history').style.display = tab==='history'?'':'none';
+  if (tab==='history') renderHistory();
+}
+function switchSource(src) {
+  state.source = src;
+  document.getElementById('src-file').classList.toggle('active',src==='file');
+  document.getElementById('src-youtube').classList.toggle('active',src==='youtube');
+  document.getElementById('source-file').style.display = src==='file'?'':'none';
+  document.getElementById('source-youtube').style.display = src==='youtube'?'':'none';
 }
 
-// ── History (localStorage) ──
-function getHistory() {
-  try {
-    return JSON.parse(localStorage.getItem('tfx_history') || '[]');
-  } catch(e) { return []; }
-}
-
-function saveToHistory(filename, transcript, language, speakers) {
-  const history = getHistory();
-  history.unshift({
-    id: Date.now() + '_' + Math.random().toString(36).slice(2,8),
-    filename: filename,
-    transcript: transcript,
-    language: language,
-    speakers: speakers,
-    date: Date.now()
-  });
-  // Keep max 100 entries
-  if (history.length > 100) history.length = 100;
-  localStorage.setItem('tfx_history', JSON.stringify(history));
-  updateHistoryBadge();
-}
-
-function deleteFromHistory(id) {
-  const history = getHistory().filter(h => h.id !== id);
-  localStorage.setItem('tfx_history', JSON.stringify(history));
-  updateHistoryBadge();
-  renderHistory();
-}
-
-function clearHistory() {
-  if (!confirm('¿Borrar todo el historial? Esta acción no se puede deshacer.')) return;
-  localStorage.removeItem('tfx_history');
-  updateHistoryBadge();
-  renderHistory();
-  showToast('Historial borrado');
-}
-
-function updateHistoryBadge() {
-  const count = getHistory().length;
-  const badge = document.getElementById('history-badge');
-  if (count > 0) {
-    badge.textContent = count;
-    badge.style.display = 'inline-flex';
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-// ── Tabs ──
-function switchTab(tab) {
-  state.currentTab = tab;
-  document.getElementById('tab-transcribe').classList.toggle('active', tab === 'transcribe');
-  document.getElementById('tab-history').classList.toggle('active', tab === 'history');
-  document.getElementById('view-transcribe').style.display = tab === 'transcribe' ? '' : 'none';
-  document.getElementById('view-history').style.display = tab === 'history' ? '' : 'none';
-  if (tab === 'history') renderHistory();
-}
-
-// ── Server status ──
+// Server
 async function checkStatus() {
-  try {
-    const r = await fetch('/api/status');
-    const d = await r.json();
-    state.ready = d.ready;
-  } catch(e) { state.ready = false; }
-  const el = document.getElementById('status-banner');
-  el.innerHTML = state.ready ? '' : '<div class="error-banner">El servicio no está disponible en este momento.</div>';
+  try { const r=await fetch('/api/status'); const d=await r.json(); state.ready=d.ready; } catch(e) { state.ready=false; }
+  document.getElementById('status-banner').innerHTML = state.ready ? '' : '<div class="error-banner">El servicio no está disponible en este momento.</div>';
 }
 
-// ── Files ──
-function addFiles(fileList) {
-  let added = 0;
-  for (const f of fileList) {
-    const ext = '.' + f.name.split('.').pop().toLowerCase();
-    if (!VALID_EXTS.includes(ext)) continue;
-    if (state.queue.find(q => q.file.name === f.name && q.file.size === f.size)) continue;
-    state.queue.push({ id: nextId++, file: f, status: 'pending', progress: 0, transcript: '', errorMsg: '' });
-    added++;
-  }
-  if (added) render();
-}
-function removeItem(id) {
-  state.queue = state.queue.filter(q => q.id !== id);
-  if (!state.queue.length) state.globalStatus = 'idle';
-  render();
-}
+// Files
+function addFiles(fl) { let a=0; for(const f of fl){const e='.'+f.name.split('.').pop().toLowerCase();if(!VALID_EXTS.includes(e))continue;if(state.queue.find(q=>q.file.name===f.name&&q.file.size===f.size))continue;state.queue.push({id:nextId++,file:f,status:'pending',progress:0,transcript:'',errorMsg:''});a++;} if(a)render(); }
+function removeItem(id) { state.queue=state.queue.filter(q=>q.id!==id); if(!state.queue.length)state.globalStatus='idle'; render(); }
 
-// ── Transcription ──
+// Transcription (files)
 async function startQueue() {
-  if (!state.ready || !state.queue.length) return;
-  state.globalStatus = 'running'; render();
-  const lang = document.getElementById('language').value;
-  const spk = document.getElementById('speaker-labels').checked;
-  for (const item of state.queue) {
-    if (item.status === 'done' || item.status === 'error') continue;
-    item.status = 'uploading'; item.progress = 0; render();
-    try {
-      item.transcript = await transcribeOne(item, lang, spk);
-      item.status = 'done';
-      // Auto-save to history
-      saveToHistory(item.file.name, item.transcript, lang, spk);
-    } catch(e) {
-      item.errorMsg = e.message; item.status = 'error';
-    }
+  if(!state.ready||!state.queue.length)return;
+  state.globalStatus='running'; render();
+  const lang=document.getElementById('language').value, spk=document.getElementById('speaker-labels').checked;
+  for(const item of state.queue){
+    if(item.status==='done'||item.status==='error')continue;
+    item.status='uploading';item.progress=0;render();
+    try { item.transcript=await transcribeOne(item,lang,spk); item.status='done'; saveToHistory(item.file.name,item.transcript,lang,spk); }
+    catch(e){ item.errorMsg=e.message; item.status='error'; }
     render();
   }
-  state.globalStatus = 'done'; render();
+  state.globalStatus='done'; render();
 }
-
-function transcribeOne(item, language, speakerLabels) {
-  return new Promise((resolve, reject) => {
-    const fd = new FormData();
-    fd.append('file', item.file);
-    fd.append('language', language);
-    fd.append('speaker_labels', speakerLabels ? 'true' : 'false');
-    const xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener('progress', e => {
-      if (e.lengthComputable) {
-        item.progress = Math.round((e.loaded / e.total) * 100);
-        if (item.progress >= 100) item.status = 'processing';
-        render();
-      }
-    });
-    xhr.addEventListener('load', () => {
-      try {
-        const d = JSON.parse(xhr.responseText);
-        if (xhr.status === 200 && d.text !== undefined) resolve(d.text);
-        else reject(new Error(d.error || 'Error HTTP ' + xhr.status));
-      } catch(e) { reject(new Error('Respuesta inesperada')); }
-    });
-    xhr.addEventListener('error', () => reject(new Error('Error de conexión')));
-    xhr.addEventListener('timeout', () => reject(new Error('Timeout')));
-    xhr.open('POST', '/api/transcribe');
-    xhr.timeout = 900000;
-    xhr.send(fd);
+function transcribeOne(item,language,speakerLabels) {
+  return new Promise((resolve,reject)=>{
+    const fd=new FormData(); fd.append('file',item.file); fd.append('language',language); fd.append('speaker_labels',speakerLabels?'true':'false');
+    const xhr=new XMLHttpRequest();
+    xhr.upload.addEventListener('progress',e=>{ if(e.lengthComputable){item.progress=Math.round((e.loaded/e.total)*100);if(item.progress>=100)item.status='processing';render();} });
+    xhr.addEventListener('load',()=>{ try{const d=JSON.parse(xhr.responseText);if(xhr.status===200&&d.text!==undefined)resolve(d.text);else reject(new Error(d.error||'Error HTTP '+xhr.status));}catch(e){reject(new Error('Respuesta inesperada'));} });
+    xhr.addEventListener('error',()=>reject(new Error('Error de conexión')));
+    xhr.addEventListener('timeout',()=>reject(new Error('Timeout')));
+    xhr.open('POST','/api/transcribe'); xhr.timeout=900000; xhr.send(fd);
   });
 }
+function retryItem(id) { const item=state.queue.find(q=>q.id===id); if(!item)return; item.status='pending';item.progress=0;item.errorMsg=''; if(state.globalStatus!=='running')startQueue();else render(); }
 
-function retryItem(id) {
-  const item = state.queue.find(q => q.id === id);
-  if (!item) return;
-  item.status = 'pending'; item.progress = 0; item.errorMsg = '';
-  if (state.globalStatus !== 'running') startQueue(); else render();
-}
+// YouTube transcription
+async function transcribeYoutube() {
+  const url = document.getElementById('yt-url').value.trim();
+  if (!url) return;
+  if (state.ytBusy) return;
+  state.ytBusy = true;
+  const lang = document.getElementById('language').value;
+  const spk = document.getElementById('speaker-labels').checked;
+  const btn = document.getElementById('yt-btn');
+  const area = document.getElementById('yt-status-area');
+  btn.disabled = true;
+  area.innerHTML = '<div class="yt-status"><p class="yt-status-text">Descargando audio de YouTube y transcribiendo...<br>Esto puede tomar varios minutos.</p><div class="yt-spinner"></div></div>';
 
-// ── Downloads ──
-function dlOne(id) {
-  const item = state.queue.find(q => q.id === id);
-  if (!item) return;
-  const blob = new Blob([item.transcript], {type:'text/plain;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = item.file.name.replace(/\.[^.]+$/, '') + '.txt';
-  a.click(); URL.revokeObjectURL(url);
-}
-function dlAll() {
-  state.queue.filter(q => q.status === 'done' && q.transcript).forEach((item, i) => {
-    setTimeout(() => dlOne(item.id), i * 150);
-  });
-}
-function cpOne(id) {
-  const item = state.queue.find(q => q.id === id);
-  if (item) navigator.clipboard.writeText(item.transcript).then(() => showToast('Copiado'));
-}
-function cpAll() {
-  const txt = state.queue.filter(q => q.status === 'done' && q.transcript)
-    .map(q => '── ' + q.file.name + ' ──\n' + q.transcript).join('\n\n');
-  navigator.clipboard.writeText(txt).then(() => showToast('Todo copiado'));
-}
-function resetAll() { state.queue = []; state.globalStatus = 'idle'; expandedCards.clear(); render(); }
-function toggleCard(id) { expandedCards.has(id) ? expandedCards.delete(id) : expandedCards.add(id); render(); }
-
-// History downloads
-function dlHistory(id) {
-  const item = getHistory().find(h => h.id === id);
-  if (!item) return;
-  const blob = new Blob([item.transcript], {type:'text/plain;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = item.filename.replace(/\.[^.]+$/, '') + '.txt';
-  a.click(); URL.revokeObjectURL(url);
-}
-function cpHistory(id) {
-  const item = getHistory().find(h => h.id === id);
-  if (item) navigator.clipboard.writeText(item.transcript).then(() => showToast('Copiado'));
-}
-function toggleHistory(id) {
-  expandedHistory.has(id) ? expandedHistory.delete(id) : expandedHistory.add(id);
-  renderHistory();
-}
-
-// ── Render: Transcribe tab ──
-function render() {
-  const dz = document.getElementById('drop-zone');
-  const dc = document.getElementById('drop-content');
-  if (state.queue.length) {
-    dz.classList.add('has-files');
-    let h = '<div class="queue-header"><span class="queue-title">Cola de audios</span><span class="queue-count">' + state.queue.length + ' archivo' + (state.queue.length>1?'s':'') + '</span></div><div class="queue-list">';
-    for (const item of state.queue) {
-      const st = (item.status==='uploading'||item.status==='processing') ? 'active' : item.status;
-      const icons = {pending:'♪',active:'<span class="mini-spinner"></span>',done:'✓',error:'✗'};
-      const labels = {pending:'En espera',uploading:'Subiendo '+item.progress+'%',processing:'Procesando...',done:'Listo',error:'Error'};
-      const pw = item.status==='uploading' ? item.progress : (item.status==='processing'?100:0);
-      const canRm = item.status==='pending'||item.status==='done'||item.status==='error';
-      h += '<div class="queue-item '+st+'"><div class="queue-item-progress" style="width:'+pw+'%"></div><div class="qi-icon '+st+'">'+(icons[st]||'♪')+'</div><div class="qi-info"><div class="qi-name">'+esc(item.file.name)+'</div><div class="qi-meta">'+fmtBytes(item.file.size)+'</div></div><span class="qi-status '+st+'">'+(labels[item.status]||'')+'</span>';
-      if (canRm) h += '<button class="qi-remove" onclick="event.stopPropagation();removeItem('+item.id+')" title="Quitar">×</button>';
-      if (item.status==='error') h += '<button class="btn-sm" onclick="event.stopPropagation();retryItem('+item.id+')" style="position:relative;z-index:1;font-size:10px">Reintentar</button>';
-      h += '</div>';
+  try {
+    const r = await fetch('/api/transcribe-youtube', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ url, language: lang, speaker_labels: spk }),
+    });
+    const d = await r.json();
+    if (r.ok && d.text) {
+      const title = d.title || 'YouTube video';
+      saveToHistory(title + '.mp3', d.text, lang, spk);
+      // Show result
+      state.ytResult = { title, text: d.text };
+      area.innerHTML = '';
+      renderYtResult();
+      showToast('Transcripción completada');
+    } else {
+      area.innerHTML = '<div class="error-banner">' + esc(d.error || 'Error desconocido') + '</div>';
     }
-    h += '</div>';
-    if (state.globalStatus !== 'running') h += '<div class="queue-add" onclick="document.getElementById(\'file-input\').click()">+ Agregar más audios</div>';
-    dc.innerHTML = h;
+  } catch(e) {
+    area.innerHTML = '<div class="error-banner">Error de conexión con el servidor.</div>';
+  }
+  state.ytBusy = false;
+  btn.disabled = false;
+}
+
+function renderYtResult() {
+  if (!state.ytResult) return;
+  const ra = document.getElementById('result-area');
+  const item = state.ytResult;
+  ra.innerHTML = '<div class="results-section"><div class="results-header"><h2 class="results-title">Transcripción</h2></div>' +
+    '<div class="result-card"><div class="rc-header" onclick="this.nextElementSibling.classList.toggle(\'open\');this.querySelector(\'.rc-toggle\').classList.toggle(\'open\')"><span class="rc-title"><span class="rc-title-text">🎬 '+esc(item.title)+'</span></span><span class="rc-toggle open">▼</span></div>' +
+    '<div class="rc-body open"><pre>'+esc(item.text)+'</pre><div class="rc-actions"><button class="btn-sm" onclick="navigator.clipboard.writeText(state.ytResult.text).then(()=>showToast(\'Copiado\'))">📋 Copiar</button><button class="btn-sm" onclick="dlYtResult()">💾 Descargar .txt</button></div></div></div>' +
+    '<button class="btn-new" onclick="state.ytResult=null;document.getElementById(\'result-area\').innerHTML=\'\';document.getElementById(\'yt-url\').value=\'\'">Nueva transcripción</button></div>';
+}
+function dlYtResult() {
+  if(!state.ytResult)return;
+  const blob=new Blob([state.ytResult.text],{type:'text/plain;charset=utf-8'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=state.ytResult.title.replace(/[^\w\s-]/g,'').trim().slice(0,80)+'.txt';a.click();URL.revokeObjectURL(url);
+}
+
+// Downloads (files)
+function dlOne(id){const item=state.queue.find(q=>q.id===id);if(!item)return;const blob=new Blob([item.transcript],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=item.file.name.replace(/\.[^.]+$/,'')+'.txt';a.click();URL.revokeObjectURL(url);}
+function dlAll(){state.queue.filter(q=>q.status==='done'&&q.transcript).forEach((item,i)=>{setTimeout(()=>dlOne(item.id),i*150);});}
+function cpOne(id){const item=state.queue.find(q=>q.id===id);if(item)navigator.clipboard.writeText(item.transcript).then(()=>showToast('Copiado'));}
+function cpAll(){const txt=state.queue.filter(q=>q.status==='done'&&q.transcript).map(q=>'── '+q.file.name+' ──\n'+q.transcript).join('\n\n');navigator.clipboard.writeText(txt).then(()=>showToast('Todo copiado'));}
+function resetAll(){state.queue=[];state.globalStatus='idle';expandedCards.clear();render();}
+function toggleCard(id){expandedCards.has(id)?expandedCards.delete(id):expandedCards.add(id);render();}
+
+// History
+function dlHistory(id){const item=getHistory().find(h=>h.id===id);if(!item)return;const blob=new Blob([item.transcript],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=item.filename.replace(/\.[^.]+$/,'')+'.txt';a.click();URL.revokeObjectURL(url);}
+function cpHistory(id){const item=getHistory().find(h=>h.id===id);if(item)navigator.clipboard.writeText(item.transcript).then(()=>showToast('Copiado'));}
+function toggleHistory(id){expandedHistory.has(id)?expandedHistory.delete(id):expandedHistory.add(id);renderHistory();}
+
+// Render: Transcribe
+function render() {
+  const dz=document.getElementById('drop-zone'),dc=document.getElementById('drop-content');
+  if(state.queue.length){
+    dz.classList.add('has-files');
+    let h='<div class="queue-header"><span class="queue-title">Cola de audios</span><span class="queue-count">'+state.queue.length+' archivo'+(state.queue.length>1?'s':'')+'</span></div><div class="queue-list">';
+    for(const item of state.queue){
+      const st=(item.status==='uploading'||item.status==='processing')?'active':item.status;
+      const icons={pending:'♪',active:'<span class="mini-spinner"></span>',done:'✓',error:'✗'};
+      const labels={pending:'En espera',uploading:'Subiendo '+item.progress+'%',processing:'Procesando...',done:'Listo',error:'Error'};
+      const pw=item.status==='uploading'?item.progress:(item.status==='processing'?100:0);
+      const canRm=item.status==='pending'||item.status==='done'||item.status==='error';
+      h+='<div class="queue-item '+st+'"><div class="queue-item-progress" style="width:'+pw+'%"></div><div class="qi-icon '+st+'">'+(icons[st]||'♪')+'</div><div class="qi-info"><div class="qi-name">'+esc(item.file.name)+'</div><div class="qi-meta">'+fmtBytes(item.file.size)+'</div></div><span class="qi-status '+st+'">'+(labels[item.status]||'')+'</span>';
+      if(canRm)h+='<button class="qi-remove" onclick="event.stopPropagation();removeItem('+item.id+')" title="Quitar">×</button>';
+      if(item.status==='error')h+='<button class="btn-sm" onclick="event.stopPropagation();retryItem('+item.id+')" style="position:relative;z-index:1;font-size:10px">Reintentar</button>';
+      h+='</div>';
+    }
+    h+='</div>';
+    if(state.globalStatus!=='running')h+='<div class="queue-add" onclick="document.getElementById(\'file-input\').click()">+ Agregar más audios</div>';
+    dc.innerHTML=h;
   } else {
     dz.classList.remove('has-files');
-    dc.innerHTML = '<div class="drop-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 6v20M12 14l8-8 8 8" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 28v4a2 2 0 002 2h24a2 2 0 002-2v-4" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round"/></svg></div><p class="drop-text">Arrastra audios aquí o haz clic para seleccionar</p><p class="drop-formats">.m4a .mp3 .wav .webm .mp4 .ogg .flac .aac .opus</p><p class="drop-hint">Puedes seleccionar varios archivos a la vez</p>';
+    dc.innerHTML='<div class="drop-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 6v20M12 14l8-8 8 8" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 28v4a2 2 0 002 2h24a2 2 0 002-2v-4" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round"/></svg></div><p class="drop-text">Arrastra audios aquí o haz clic para seleccionar</p><p class="drop-formats">.m4a .mp3 .wav .webm .mp4 .ogg .flac .aac .opus</p><p class="drop-hint">Puedes seleccionar varios archivos a la vez</p>';
   }
+  const aa=document.getElementById('action-area');
+  if(state.globalStatus==='idle'&&state.queue.length&&state.ready){
+    const lbl=state.queue.length===1?'Transcribir':'Transcribir '+state.queue.length+' audios';
+    aa.innerHTML='<div class="btn-row"><button class="btn-primary" onclick="startQueue()">'+lbl+'</button><button class="btn-secondary" onclick="resetAll()">Limpiar</button></div>';
+  } else if(state.globalStatus==='running'){
+    const done=state.queue.filter(q=>q.status==='done').length;const pct=Math.round((done/state.queue.length)*100);
+    aa.innerHTML='<div class="global-progress"><div class="global-bar"><div class="global-fill" style="width:'+pct+'%"></div></div><p class="global-text">Transcribiendo '+done+' de '+state.queue.length+'...</p></div>';
+  } else if(state.globalStatus==='done'){
+    const done=state.queue.filter(q=>q.status==='done').length;const errs=state.queue.filter(q=>q.status==='error').length;
+    let m='✓ '+done+' transcripción'+(done>1?'es':'')+' completada'+(done>1?'s':'');if(errs)m+=' · '+errs+' error'+(errs>1?'es':'');
+    aa.innerHTML='<p class="global-text" style="padding:8px 0;color:var(--success)">'+m+'</p>';
+  } else { aa.innerHTML=''; }
 
-  const aa = document.getElementById('action-area');
-  if (state.globalStatus==='idle' && state.queue.length && state.ready) {
-    const lbl = state.queue.length===1 ? 'Transcribir' : 'Transcribir '+state.queue.length+' audios';
-    aa.innerHTML = '<div class="btn-row"><button class="btn-primary" onclick="startQueue()">'+lbl+'</button><button class="btn-secondary" onclick="resetAll()">Limpiar</button></div>';
-  } else if (state.globalStatus==='running') {
-    const done = state.queue.filter(q=>q.status==='done').length;
-    const pct = Math.round((done/state.queue.length)*100);
-    aa.innerHTML = '<div class="global-progress"><div class="global-bar"><div class="global-fill" style="width:'+pct+'%"></div></div><p class="global-text">Transcribiendo '+done+' de '+state.queue.length+'...</p></div>';
-  } else if (state.globalStatus==='done') {
-    const done = state.queue.filter(q=>q.status==='done').length;
-    const errs = state.queue.filter(q=>q.status==='error').length;
-    let m = '✓ '+done+' transcripción'+(done>1?'es':'')+' completada'+(done>1?'s':'');
-    if (errs) m += ' · '+errs+' error'+(errs>1?'es':'');
-    aa.innerHTML = '<p class="global-text" style="padding:8px 0;color:var(--success)">'+m+'</p>';
-  } else { aa.innerHTML = ''; }
-
-  const ra = document.getElementById('result-area');
-  const doneItems = state.queue.filter(q=>q.status==='done'&&q.transcript);
-  if (!doneItems.length) { ra.innerHTML = ''; return; }
-  let rh = '<div class="results-section"><div class="results-header"><h2 class="results-title">Transcripciones</h2><div class="results-actions">';
-  if (doneItems.length > 1) rh += '<button class="btn-action" onclick="cpAll()">📋 Copiar todo</button><button class="btn-action" onclick="dlAll()">💾 Descargar todo</button>';
-  rh += '</div></div>';
-  for (const item of doneItems) {
-    const open = expandedCards.has(item.id) || doneItems.length === 1;
-    rh += '<div class="result-card"><div class="rc-header" onclick="toggleCard('+item.id+')"><span class="rc-title"><span class="rc-title-text">🎧 '+esc(item.file.name)+'</span></span><span class="rc-toggle '+(open?'open':'')+'">▼</span></div><div class="rc-body '+(open?'open':'')+'"><pre>'+esc(item.transcript)+'</pre><div class="rc-actions"><button class="btn-sm" onclick="cpOne('+item.id+')">📋 Copiar</button><button class="btn-sm" onclick="dlOne('+item.id+')">💾 Descargar .txt</button></div></div></div>';
+  // File results
+  if(state.source==='file'){
+    const ra=document.getElementById('result-area');
+    const doneItems=state.queue.filter(q=>q.status==='done'&&q.transcript);
+    if(!doneItems.length){if(!state.ytResult)ra.innerHTML='';return;}
+    let rh='<div class="results-section"><div class="results-header"><h2 class="results-title">Transcripciones</h2><div class="results-actions">';
+    if(doneItems.length>1)rh+='<button class="btn-action" onclick="cpAll()">📋 Copiar todo</button><button class="btn-action" onclick="dlAll()">💾 Descargar todo</button>';
+    rh+='</div></div>';
+    for(const item of doneItems){
+      const open=expandedCards.has(item.id)||doneItems.length===1;
+      rh+='<div class="result-card"><div class="rc-header" onclick="toggleCard('+item.id+')"><span class="rc-title"><span class="rc-title-text">🎧 '+esc(item.file.name)+'</span></span><span class="rc-toggle '+(open?'open':'')+'">▼</span></div><div class="rc-body '+(open?'open':'')+'"><pre>'+esc(item.transcript)+'</pre><div class="rc-actions"><button class="btn-sm" onclick="cpOne('+item.id+')">📋 Copiar</button><button class="btn-sm" onclick="dlOne('+item.id+')">💾 Descargar .txt</button></div></div></div>';
+    }
+    rh+='<button class="btn-new" onclick="resetAll()">Nueva sesión</button></div>';
+    ra.innerHTML=rh;
   }
-  rh += '<button class="btn-new" onclick="resetAll()">Nueva sesión</button></div>';
-  ra.innerHTML = rh;
 }
 
-// ── Render: History tab ──
-function renderHistory() {
-  const hc = document.getElementById('history-content');
-  const history = getHistory();
-
-  if (!history.length) {
-    hc.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div>Aún no hay transcripciones en tu historial.<br>Se guardan automáticamente al transcribir.</div>';
-    return;
+// Render: History
+function renderHistory(){
+  const hc=document.getElementById('history-content');const history=getHistory();
+  if(!history.length){hc.innerHTML='<div class="empty-state"><div class="empty-state-icon">📝</div>Aún no hay transcripciones en tu historial.<br>Se guardan automáticamente al transcribir.</div>';return;}
+  let h='<div class="results-section"><div class="results-header"><h2 class="results-title">Tu historial</h2><div class="results-actions"><button class="btn-action" onclick="clearHistory()" style="color:var(--danger)">🗑 Borrar todo</button></div></div>';
+  for(const item of history){
+    const open=expandedHistory.has(item.id);
+    h+='<div class="result-card"><div class="rc-header" onclick="toggleHistory(\''+item.id+'\')"><span class="rc-title"><span class="rc-title-text">🎧 '+esc(item.filename)+'</span><span class="rc-date">'+fmtDate(item.date)+'</span></span><span class="rc-toggle '+(open?'open':'')+'">▼</span></div><div class="rc-body '+(open?'open':'')+'">';
+    h+='<pre>'+esc(item.transcript)+'</pre><div class="rc-actions"><button class="btn-sm" onclick="cpHistory(\''+item.id+'\')">📋 Copiar</button><button class="btn-sm" onclick="dlHistory(\''+item.id+'\')">💾 Descargar .txt</button><button class="btn-sm danger" onclick="deleteFromHistory(\''+item.id+'\')">🗑 Eliminar</button></div></div></div>';
   }
-
-  let h = '<div class="results-section"><div class="results-header"><h2 class="results-title">Tu historial</h2><div class="results-actions"><button class="btn-action" onclick="clearHistory()" style="color:var(--danger)">🗑 Borrar todo</button></div></div>';
-
-  for (const item of history) {
-    const open = expandedHistory.has(item.id);
-    h += '<div class="result-card"><div class="rc-header" onclick="toggleHistory(\''+item.id+'\')">';
-    h += '<span class="rc-title"><span class="rc-title-text">🎧 '+esc(item.filename)+'</span><span class="rc-date">'+fmtDate(item.date)+'</span></span>';
-    h += '<span class="rc-toggle '+(open?'open':'')+'">▼</span></div>';
-    h += '<div class="rc-body '+(open?'open':'')+'">';
-    h += '<pre>'+esc(item.transcript)+'</pre>';
-    h += '<div class="rc-actions">';
-    h += '<button class="btn-sm" onclick="cpHistory(\''+item.id+'\')">📋 Copiar</button>';
-    h += '<button class="btn-sm" onclick="dlHistory(\''+item.id+'\')">💾 Descargar .txt</button>';
-    h += '<button class="btn-sm danger" onclick="deleteFromHistory(\''+item.id+'\')">🗑 Eliminar</button>';
-    h += '</div></div></div>';
-  }
-
-  h += '</div>';
-  hc.innerHTML = h;
+  h+='</div>';hc.innerHTML=h;
 }
 
-// ── Events ──
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('file-input');
-dropZone.addEventListener('click', e => { if (!state.queue.length) fileInput.click(); });
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files); });
-fileInput.addEventListener('change', e => { if (e.target.files?.length) addFiles(e.target.files); e.target.value = ''; });
+// Events
+const dropZone=document.getElementById('drop-zone'),fileInput=document.getElementById('file-input');
+dropZone.addEventListener('click',e=>{if(!state.queue.length)fileInput.click();});
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');if(e.dataTransfer?.files?.length)addFiles(e.dataTransfer.files);});
+fileInput.addEventListener('change',e=>{if(e.target.files?.length)addFiles(e.target.files);e.target.value='';});
+document.getElementById('yt-url').addEventListener('keydown',e=>{if(e.key==='Enter')transcribeYoutube();});
 
-// ── Init ──
-checkStatus().then(() => render());
-updateHistoryBadge();
+checkStatus().then(()=>render());
+updateBadge();
 </script>
 </body>
 </html>
