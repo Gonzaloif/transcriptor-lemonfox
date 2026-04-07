@@ -42,7 +42,9 @@
     pointer-events: none; z-index: 0;
   }
   .app { position: relative; z-index: 1; max-width: 620px; margin: 0 auto; padding: 48px 28px 40px; }
-  .header { display: flex; align-items: center; gap: 16px; margin-bottom: 40px; animation: fadeDown 0.6s ease; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; animation: fadeDown 0.6s ease; }
   .logo {
     width: 50px; height: 50px; border-radius: 14px;
     background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2);
@@ -50,10 +52,36 @@
   }
   .header h1 { font-size: 26px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; line-height: 1.1; }
   .header p { font-size: 14px; color: var(--text-dim); font-style: italic; margin-top: 2px; }
-  .section { margin-bottom: 24px; animation: fadeUp 0.5s ease both; }
-  .section:nth-child(2) { animation-delay: 0.1s; }
-  .section:nth-child(3) { animation-delay: 0.15s; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 0; margin-bottom: 28px;
+    border-bottom: 1px solid rgba(200,169,126,0.12);
+    animation: fadeUp 0.5s ease;
+  }
+  .tab {
+    padding: 10px 20px; font-size: 14px; font-weight: 600;
+    font-family: var(--font-display);
+    color: var(--text-faint); cursor: pointer;
+    border: none; background: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .tab:hover { color: var(--text-dim); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; font-size: 10px;
+    font-family: var(--font-mono); font-weight: 500;
+    background: var(--gold-dim); color: var(--gold);
+    margin-left: 6px; vertical-align: middle;
+  }
+
+  .section { margin-bottom: 24px; }
   .label { display: block; font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+
+  /* Options */
   .options-row { display: flex; gap: 16px; align-items: flex-end; }
   .select-wrap { flex: 1; }
   .select {
@@ -68,6 +96,8 @@
     cursor: pointer; white-space: nowrap; padding-bottom: 6px; user-select: none;
   }
   .checkbox-label input { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; }
+
+  /* Drop zone */
   .drop-zone {
     border: 2px dashed rgba(200,169,126,0.2); border-radius: 16px; padding: 36px 24px;
     text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(200,169,126,0.015);
@@ -79,6 +109,8 @@
   .drop-text { font-size: 15px; color: var(--text-dim); margin-bottom: 6px; }
   .drop-formats { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); letter-spacing: 0.5px; }
   .drop-hint { font-size: 12px; color: var(--text-faint); margin-top: 4px; font-style: italic; }
+
+  /* Queue */
   .queue-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .queue-title { font-size: 14px; font-weight: 600; color: var(--text-dim); }
   .queue-count { font-size: 12px; font-family: var(--font-mono); color: var(--text-faint); }
@@ -124,12 +156,16 @@
     font-size: 12px; color: var(--text-faint); cursor: pointer; transition: all 0.2s; margin-top: 10px;
   }
   .queue-add:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Buttons */
   .btn-sm {
     padding: 5px 12px; font-size: 11px; font-family: var(--font-display); font-weight: 600;
     background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2);
     border-radius: 6px; color: var(--gold); cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
   }
   .btn-sm:hover { background: rgba(200,169,126,0.25); }
+  .btn-sm.danger { color: var(--danger); border-color: rgba(180,80,60,0.25); background: var(--danger-bg); }
+  .btn-sm.danger:hover { background: rgba(180,80,60,0.2); }
   .btn-primary {
     width: 100%; padding: 15px; font-size: 16px; font-weight: 700; font-family: var(--font-display);
     background: linear-gradient(135deg, var(--gold) 0%, #a68b5b 100%);
@@ -148,10 +184,14 @@
     color: var(--text-dim); cursor: pointer; transition: all 0.2s;
   }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Progress */
   .global-progress { display: flex; flex-direction: column; gap: 10px; padding: 16px 0; }
   .global-bar { width: 100%; height: 5px; border-radius: 3px; background: rgba(200,169,126,0.1); overflow: hidden; }
   .global-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), #dfc39e); transition: width 0.3s ease; }
   .global-text { font-size: 13px; color: var(--text-dim); font-style: italic; text-align: center; }
+
+  /* Results & History cards */
   .results-section { margin-top: 16px; animation: fadeUp 0.4s ease; }
   .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
   .results-title { font-size: 18px; font-weight: 700; color: var(--gold); }
@@ -165,8 +205,10 @@
   .result-card { background: var(--surface); border: 1px solid rgba(200,169,126,0.1); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
   .rc-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; user-select: none; transition: background 0.2s; }
   .rc-header:hover { background: rgba(200,169,126,0.04); }
-  .rc-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .rc-toggle { font-size: 12px; color: var(--text-faint); transition: transform 0.2s; }
+  .rc-title { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .rc-title-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rc-date { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); white-space: nowrap; margin-left: 8px; }
+  .rc-toggle { font-size: 12px; color: var(--text-faint); transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
   .rc-toggle.open { transform: rotate(180deg); }
   .rc-body { padding: 0 16px 16px; display: none; }
   .rc-body.open { display: block; }
@@ -183,6 +225,21 @@
     color: var(--text-dim); cursor: pointer; transition: all 0.2s;
   }
   .btn-new:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* History empty state */
+  .empty-state {
+    text-align: center; padding: 48px 24px;
+    color: var(--text-faint); font-style: italic; font-size: 15px;
+  }
+  .empty-state-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+
+  /* Error banner */
+  .error-banner {
+    background: var(--danger-bg); border: 1px solid rgba(180,80,60,0.25);
+    border-radius: var(--radius); padding: 14px 18px; text-align: center;
+    font-size: 14px; color: var(--danger); margin-bottom: 24px;
+  }
+
   .footer { margin-top: 36px; text-align: center; font-size: 11px; color: var(--text-faint); font-style: italic; }
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
@@ -195,11 +252,6 @@
     width: 14px; height: 14px; border: 2px solid rgba(106,158,188,0.2);
     border-top-color: var(--blue); border-radius: 50%;
     animation: spin 0.8s linear infinite; display: inline-block;
-  }
-  .error-banner {
-    background: var(--danger-bg); border: 1px solid rgba(180,80,60,0.25);
-    border-radius: var(--radius); padding: 14px 18px; text-align: center;
-    font-size: 14px; color: var(--danger); margin-bottom: 24px;
   }
   pre::-webkit-scrollbar { width: 6px; }
   pre::-webkit-scrollbar-track { background: transparent; }
@@ -229,45 +281,65 @@
       <p>Audio a texto con Lemonfox AI</p>
     </div>
   </div>
+
   <div id="status-banner"></div>
-  <div class="section">
-    <div class="options-row">
-      <div class="select-wrap">
-        <label class="label">Idioma</label>
-        <select class="select" id="language">
-          <option value="spanish">Español</option>
-          <option value="english">English</option>
-          <option value="portuguese">Português</option>
-          <option value="french">Français</option>
-          <option value="german">Deutsch</option>
-          <option value="italian">Italiano</option>
-          <option value="">Autodetectar</option>
-        </select>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tab-transcribe" onclick="switchTab('transcribe')">Transcribir</button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">Historial <span class="tab-badge" id="history-badge" style="display:none">0</span></button>
+  </div>
+
+  <!-- Transcribe view -->
+  <div id="view-transcribe">
+    <div class="section">
+      <div class="options-row">
+        <div class="select-wrap">
+          <label class="label">Idioma</label>
+          <select class="select" id="language">
+            <option value="spanish">Español</option>
+            <option value="english">English</option>
+            <option value="portuguese">Português</option>
+            <option value="french">Français</option>
+            <option value="german">Deutsch</option>
+            <option value="italian">Italiano</option>
+            <option value="">Autodetectar</option>
+          </select>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="speaker-labels">
+          <span>Identificar hablantes</span>
+        </label>
       </div>
-      <label class="checkbox-label">
-        <input type="checkbox" id="speaker-labels">
-        <span>Identificar hablantes</span>
-      </label>
     </div>
-  </div>
-  <div class="section">
-    <div class="drop-zone" id="drop-zone">
-      <input type="file" id="file-input" accept=".m4a,.mp3,.wav,.webm,.mp4,.ogg,.flac,.aac,.mpga" hidden multiple>
-      <div id="drop-content"></div>
+    <div class="section">
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".m4a,.mp3,.wav,.webm,.mp4,.ogg,.flac,.aac,.mpga,.opus" hidden multiple>
+        <div id="drop-content"></div>
+      </div>
     </div>
+    <div id="action-area"></div>
+    <div id="result-area"></div>
   </div>
-  <div id="action-area"></div>
-  <div id="result-area"></div>
+
+  <!-- History view -->
+  <div id="view-history" style="display:none">
+    <div id="history-content"></div>
+  </div>
+
   <p class="footer">Servicio de transcripción · Schoenstatt Chile</p>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-let state = { ready: false, queue: [], globalStatus: 'idle' };
+// ── State ──
+let state = { ready: false, queue: [], globalStatus: 'idle', currentTab: 'transcribe' };
 let nextId = 1;
 let expandedCards = new Set();
-const VALID_EXTS = ['.m4a','.mp3','.wav','.webm','.mp4','.ogg','.flac','.aac','.mpga'];
+let expandedHistory = new Set();
+const VALID_EXTS = ['.m4a','.mp3','.wav','.webm','.mp4','.ogg','.flac','.aac','.mpga','.opus'];
 
+// ── Helpers ──
 function fmtBytes(b) {
   if (b < 1024) return b + ' B';
   if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
@@ -279,27 +351,87 @@ function showToast(m) {
   t.textContent = m; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
+function fmtDate(ts) {
+  const d = new Date(ts);
+  const day = d.getDate().toString().padStart(2,'0');
+  const mon = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()];
+  const year = d.getFullYear();
+  const h = d.getHours().toString().padStart(2,'0');
+  const min = d.getMinutes().toString().padStart(2,'0');
+  return `${day} ${mon} ${year} · ${h}:${min}`;
+}
 
-// Check server status
+// ── History (localStorage) ──
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('tfx_history') || '[]');
+  } catch(e) { return []; }
+}
+
+function saveToHistory(filename, transcript, language, speakers) {
+  const history = getHistory();
+  history.unshift({
+    id: Date.now() + '_' + Math.random().toString(36).slice(2,8),
+    filename: filename,
+    transcript: transcript,
+    language: language,
+    speakers: speakers,
+    date: Date.now()
+  });
+  // Keep max 100 entries
+  if (history.length > 100) history.length = 100;
+  localStorage.setItem('tfx_history', JSON.stringify(history));
+  updateHistoryBadge();
+}
+
+function deleteFromHistory(id) {
+  const history = getHistory().filter(h => h.id !== id);
+  localStorage.setItem('tfx_history', JSON.stringify(history));
+  updateHistoryBadge();
+  renderHistory();
+}
+
+function clearHistory() {
+  if (!confirm('¿Borrar todo el historial? Esta acción no se puede deshacer.')) return;
+  localStorage.removeItem('tfx_history');
+  updateHistoryBadge();
+  renderHistory();
+  showToast('Historial borrado');
+}
+
+function updateHistoryBadge() {
+  const count = getHistory().length;
+  const badge = document.getElementById('history-badge');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ── Tabs ──
+function switchTab(tab) {
+  state.currentTab = tab;
+  document.getElementById('tab-transcribe').classList.toggle('active', tab === 'transcribe');
+  document.getElementById('tab-history').classList.toggle('active', tab === 'history');
+  document.getElementById('view-transcribe').style.display = tab === 'transcribe' ? '' : 'none';
+  document.getElementById('view-history').style.display = tab === 'history' ? '' : 'none';
+  if (tab === 'history') renderHistory();
+}
+
+// ── Server status ──
 async function checkStatus() {
   try {
     const r = await fetch('/api/status');
     const d = await r.json();
     state.ready = d.ready;
   } catch(e) { state.ready = false; }
-  renderBanner();
-}
-
-function renderBanner() {
   const el = document.getElementById('status-banner');
-  if (!state.ready) {
-    el.innerHTML = '<div class="error-banner">El servicio no está disponible en este momento.</div>';
-  } else {
-    el.innerHTML = '';
-  }
+  el.innerHTML = state.ready ? '' : '<div class="error-banner">El servicio no está disponible en este momento.</div>';
 }
 
-// Files
+// ── Files ──
 function addFiles(fileList) {
   let added = 0;
   for (const f of fileList) {
@@ -317,7 +449,7 @@ function removeItem(id) {
   render();
 }
 
-// Transcription
+// ── Transcription ──
 async function startQueue() {
   if (!state.ready || !state.queue.length) return;
   state.globalStatus = 'running'; render();
@@ -329,6 +461,8 @@ async function startQueue() {
     try {
       item.transcript = await transcribeOne(item, lang, spk);
       item.status = 'done';
+      // Auto-save to history
+      saveToHistory(item.file.name, item.transcript, lang, spk);
     } catch(e) {
       item.errorMsg = e.message; item.status = 'error';
     }
@@ -373,7 +507,7 @@ function retryItem(id) {
   if (state.globalStatus !== 'running') startQueue(); else render();
 }
 
-// Downloads
+// ── Downloads ──
 function dlOne(id) {
   const item = state.queue.find(q => q.id === id);
   if (!item) return;
@@ -400,7 +534,26 @@ function cpAll() {
 function resetAll() { state.queue = []; state.globalStatus = 'idle'; expandedCards.clear(); render(); }
 function toggleCard(id) { expandedCards.has(id) ? expandedCards.delete(id) : expandedCards.add(id); render(); }
 
-// Render
+// History downloads
+function dlHistory(id) {
+  const item = getHistory().find(h => h.id === id);
+  if (!item) return;
+  const blob = new Blob([item.transcript], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = item.filename.replace(/\.[^.]+$/, '') + '.txt';
+  a.click(); URL.revokeObjectURL(url);
+}
+function cpHistory(id) {
+  const item = getHistory().find(h => h.id === id);
+  if (item) navigator.clipboard.writeText(item.transcript).then(() => showToast('Copiado'));
+}
+function toggleHistory(id) {
+  expandedHistory.has(id) ? expandedHistory.delete(id) : expandedHistory.add(id);
+  renderHistory();
+}
+
+// ── Render: Transcribe tab ──
 function render() {
   const dz = document.getElementById('drop-zone');
   const dc = document.getElementById('drop-content');
@@ -423,10 +576,9 @@ function render() {
     dc.innerHTML = h;
   } else {
     dz.classList.remove('has-files');
-    dc.innerHTML = '<div class="drop-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 6v20M12 14l8-8 8 8" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 28v4a2 2 0 002 2h24a2 2 0 002-2v-4" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round"/></svg></div><p class="drop-text">Arrastra audios aquí o haz clic para seleccionar</p><p class="drop-formats">.m4a .mp3 .wav .webm .mp4 .ogg .flac .aac</p><p class="drop-hint">Puedes seleccionar varios archivos a la vez</p>';
+    dc.innerHTML = '<div class="drop-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 6v20M12 14l8-8 8 8" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 28v4a2 2 0 002 2h24a2 2 0 002-2v-4" stroke="#c8a97e" stroke-width="2.5" stroke-linecap="round"/></svg></div><p class="drop-text">Arrastra audios aquí o haz clic para seleccionar</p><p class="drop-formats">.m4a .mp3 .wav .webm .mp4 .ogg .flac .aac .opus</p><p class="drop-hint">Puedes seleccionar varios archivos a la vez</p>';
   }
 
-  // Actions
   const aa = document.getElementById('action-area');
   if (state.globalStatus==='idle' && state.queue.length && state.ready) {
     const lbl = state.queue.length===1 ? 'Transcribir' : 'Transcribir '+state.queue.length+' audios';
@@ -443,7 +595,6 @@ function render() {
     aa.innerHTML = '<p class="global-text" style="padding:8px 0;color:var(--success)">'+m+'</p>';
   } else { aa.innerHTML = ''; }
 
-  // Results
   const ra = document.getElementById('result-area');
   const doneItems = state.queue.filter(q=>q.status==='done'&&q.transcript);
   if (!doneItems.length) { ra.innerHTML = ''; return; }
@@ -452,13 +603,43 @@ function render() {
   rh += '</div></div>';
   for (const item of doneItems) {
     const open = expandedCards.has(item.id) || doneItems.length === 1;
-    rh += '<div class="result-card"><div class="rc-header" onclick="toggleCard('+item.id+')"><span class="rc-title">🎧 '+esc(item.file.name)+'</span><span class="rc-toggle '+(open?'open':'')+'">▼</span></div><div class="rc-body '+(open?'open':'')+'"><pre>'+esc(item.transcript)+'</pre><div class="rc-actions"><button class="btn-sm" onclick="cpOne('+item.id+')">📋 Copiar</button><button class="btn-sm" onclick="dlOne('+item.id+')">💾 Descargar .txt</button></div></div></div>';
+    rh += '<div class="result-card"><div class="rc-header" onclick="toggleCard('+item.id+')"><span class="rc-title"><span class="rc-title-text">🎧 '+esc(item.file.name)+'</span></span><span class="rc-toggle '+(open?'open':'')+'">▼</span></div><div class="rc-body '+(open?'open':'')+'"><pre>'+esc(item.transcript)+'</pre><div class="rc-actions"><button class="btn-sm" onclick="cpOne('+item.id+')">📋 Copiar</button><button class="btn-sm" onclick="dlOne('+item.id+')">💾 Descargar .txt</button></div></div></div>';
   }
   rh += '<button class="btn-new" onclick="resetAll()">Nueva sesión</button></div>';
   ra.innerHTML = rh;
 }
 
-// Events
+// ── Render: History tab ──
+function renderHistory() {
+  const hc = document.getElementById('history-content');
+  const history = getHistory();
+
+  if (!history.length) {
+    hc.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div>Aún no hay transcripciones en tu historial.<br>Se guardan automáticamente al transcribir.</div>';
+    return;
+  }
+
+  let h = '<div class="results-section"><div class="results-header"><h2 class="results-title">Tu historial</h2><div class="results-actions"><button class="btn-action" onclick="clearHistory()" style="color:var(--danger)">🗑 Borrar todo</button></div></div>';
+
+  for (const item of history) {
+    const open = expandedHistory.has(item.id);
+    h += '<div class="result-card"><div class="rc-header" onclick="toggleHistory(\''+item.id+'\')">';
+    h += '<span class="rc-title"><span class="rc-title-text">🎧 '+esc(item.filename)+'</span><span class="rc-date">'+fmtDate(item.date)+'</span></span>';
+    h += '<span class="rc-toggle '+(open?'open':'')+'">▼</span></div>';
+    h += '<div class="rc-body '+(open?'open':'')+'">';
+    h += '<pre>'+esc(item.transcript)+'</pre>';
+    h += '<div class="rc-actions">';
+    h += '<button class="btn-sm" onclick="cpHistory(\''+item.id+'\')">📋 Copiar</button>';
+    h += '<button class="btn-sm" onclick="dlHistory(\''+item.id+'\')">💾 Descargar .txt</button>';
+    h += '<button class="btn-sm danger" onclick="deleteFromHistory(\''+item.id+'\')">🗑 Eliminar</button>';
+    h += '</div></div></div>';
+  }
+
+  h += '</div>';
+  hc.innerHTML = h;
+}
+
+// ── Events ──
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 dropZone.addEventListener('click', e => { if (!state.queue.length) fileInput.click(); });
@@ -467,8 +648,9 @@ dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-ove
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files); });
 fileInput.addEventListener('change', e => { if (e.target.files?.length) addFiles(e.target.files); e.target.value = ''; });
 
-// Init
+// ── Init ──
 checkStatus().then(() => render());
+updateHistoryBadge();
 </script>
 </body>
 </html>
