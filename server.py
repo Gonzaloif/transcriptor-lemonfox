@@ -3,7 +3,7 @@
 """
 Transcriptor Lemonfox — Servidor web
 API key se lee de la variable de entorno LEMONFOX_API_KEY
-Soporta archivos de audio y URLs de YouTube (via cobalt.tools)
+YouTube via RapidAPI YouTube MP3
 """
 
 import os
@@ -21,7 +21,6 @@ app = Flask(__name__, static_folder=str(APP_DIR / "static"), static_url_path="/s
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
 
 LEMONFOX_URL = "https://api.lemonfox.ai/v1/audio/transcriptions"
-COBALT_URL = "https://api.cobalt.tools"
 AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".webm", ".mp4", ".ogg", ".flac", ".aac", ".mpga", ".opus"}
 
 
@@ -29,8 +28,11 @@ def get_api_key():
     return os.environ.get("LEMONFOX_API_KEY", "").strip()
 
 
+def get_rapidapi_key():
+    return os.environ.get("RAPIDAPI_KEY", "").strip()
+
+
 def send_to_lemonfox(audio_path, filename, language, speaker_labels):
-    """Send an audio file to Lemonfox and return transcription text."""
     api_key = get_api_key()
     if not api_key:
         return None, "API key no configurada en el servidor."
@@ -103,80 +105,59 @@ def send_to_lemonfox(audio_path, filename, language, speaker_labels):
         return text, None
 
 
-def download_youtube_audio(url):
-    """Download audio from YouTube using cobalt.tools API. Returns (file_path, title, error)."""
+def extract_video_id(url):
+    patterns = [
+        r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/)([a-zA-Z0-9_-]{11})',
+    ]
+    for p in patterns:
+        m = re.search(p, url)
+        if m:
+            return m.group(1)
+    return None
+
+
+def download_youtube_audio(video_id):
+    rapidapi_key = get_rapidapi_key()
+    if not rapidapi_key:
+        return None, None, "RAPIDAPI_KEY no configurada en el servidor."
+
     try:
-        r = req_lib.post(
-            COBALT_URL,
-            json={
-                "url": url,
-                "audioFormat": "mp3",
-                "isAudioOnly": True,
-                "filenameStyle": "basic",
-            },
+        resp = req_lib.get(
+            "https://youtube-mp36.p.rapidapi.com/dl",
+            params={"id": video_id},
             headers={
-                "Accept": "application/json",
-                "Content-Type": "application/json",
+                "x-rapidapi-key": rapidapi_key,
+                "x-rapidapi-host": "youtube-mp36.p.rapidapi.com",
             },
-            timeout=30,
+            timeout=60,
         )
     except Exception as e:
-        return None, None, f"Error contactando cobalt: {str(e)[:200]}"
+        return None, None, f"Error contactando RapidAPI: {str(e)[:200]}"
 
-    if r.status_code != 200:
-        try:
-            err = r.json()
-            msg = err.get("error", {}).get("code", "") or json.dumps(err, ensure_ascii=False)
-        except Exception:
-            msg = r.text[:300]
-        return None, None, f"Cobalt error: {msg}"
+    if resp.status_code != 200:
+        return None, None, f"RapidAPI error HTTP {resp.status_code}"
 
-    data = r.json()
+    data = resp.json()
     status = data.get("status", "")
+    title = data.get("title", "youtube_audio")
+    download_link = data.get("link", "")
 
-    # cobalt returns a URL to download the audio
-    download_url = None
-    title = "youtube_audio"
+    if status != "ok" or not download_link:
+        msg = data.get("msg", "") or f"Status: {status}"
+        return None, title, f"No se pudo obtener el audio: {msg}"
 
-    if status == "redirect" or status == "stream":
-        download_url = data.get("url", "")
-    elif status == "tunnel":
-        download_url = data.get("url", "")
-    elif status == "picker":
-        # Multiple options, pick first audio
-        picker = data.get("picker", [])
-        if picker:
-            download_url = picker[0].get("url", "")
-    elif status == "error":
-        err_code = data.get("error", {}).get("code", "unknown")
-        return None, None, f"Cobalt no pudo procesar el video: {err_code}"
-    else:
-        return None, None, f"Respuesta inesperada de cobalt: {status}"
-
-    if not download_url:
-        return None, None, "No se obtuvo URL de descarga de cobalt."
-
-    # Download the actual audio file
+    # Download the MP3 file
     try:
-        audio_resp = req_lib.get(download_url, timeout=300, stream=True)
+        audio_resp = req_lib.get(download_link, timeout=300, stream=True)
         if audio_resp.status_code != 200:
-            return None, None, f"Error descargando audio: HTTP {audio_resp.status_code}"
+            return None, title, f"Error descargando MP3: HTTP {audio_resp.status_code}"
     except Exception as e:
-        return None, None, f"Error descargando audio: {str(e)[:200]}"
+        return None, title, f"Error descargando MP3: {str(e)[:200]}"
 
-    # Save to temp file
     tmp = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
     for chunk in audio_resp.iter_content(chunk_size=8192):
         tmp.write(chunk)
     tmp.close()
-
-    # Try to extract title from content-disposition or use default
-    cd = audio_resp.headers.get("content-disposition", "")
-    if "filename=" in cd:
-        try:
-            title = cd.split("filename=")[-1].strip('"').rsplit(".", 1)[0]
-        except Exception:
-            pass
 
     return tmp.name, title, None
 
@@ -228,12 +209,12 @@ def transcribe_youtube():
     if not url:
         return jsonify({"error": "No se proporcionó URL."}), 400
 
-    yt_pattern = r'(youtube\.com/watch|youtu\.be/|youtube\.com/shorts/)'
-    if not re.search(yt_pattern, url):
+    video_id = extract_video_id(url)
+    if not video_id:
         return jsonify({"error": "URL no parece ser de YouTube."}), 400
 
-    # Download via cobalt
-    audio_path, title, dl_error = download_youtube_audio(url)
+    # Download via RapidAPI
+    audio_path, title, dl_error = download_youtube_audio(video_id)
     if dl_error:
         return jsonify({"error": dl_error}), 400
 
