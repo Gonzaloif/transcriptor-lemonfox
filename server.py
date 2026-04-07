@@ -121,30 +121,40 @@ def download_youtube_audio(video_id):
     if not rapidapi_key:
         return None, None, "RAPIDAPI_KEY no configurada en el servidor."
 
-    try:
-        resp = req_lib.get(
-            "https://youtube-mp36.p.rapidapi.com/dl",
-            params={"id": video_id},
-            headers={
-                "x-rapidapi-key": rapidapi_key,
-                "x-rapidapi-host": "youtube-mp36.p.rapidapi.com",
-            },
-            timeout=60,
-        )
-    except Exception as e:
-        return None, None, f"Error contactando RapidAPI: {str(e)[:200]}"
+    # Poll until ready (max ~90 seconds)
+    max_polls = 10
+    for poll in range(max_polls):
+        try:
+            resp = req_lib.get(
+                "https://youtube-mp36.p.rapidapi.com/dl",
+                params={"id": video_id},
+                headers={
+                    "x-rapidapi-key": rapidapi_key,
+                    "x-rapidapi-host": "youtube-mp36.p.rapidapi.com",
+                },
+                timeout=60,
+            )
+        except Exception as e:
+            return None, None, f"Error contactando RapidAPI: {str(e)[:200]}"
 
-    if resp.status_code != 200:
-        return None, None, f"RapidAPI error HTTP {resp.status_code}"
+        if resp.status_code != 200:
+            return None, None, f"RapidAPI error HTTP {resp.status_code}"
 
-    data = resp.json()
-    status = data.get("status", "")
-    title = data.get("title", "youtube_audio")
-    download_link = data.get("link", "")
+        data = resp.json()
+        status = data.get("status", "")
+        title = data.get("title", "youtube_audio")
+        download_link = data.get("link", "")
 
-    if status != "ok" or not download_link:
-        msg = data.get("msg", "") or f"Status: {status}"
-        return None, title, f"No se pudo obtener el audio: {msg}"
+        if status == "ok" and download_link:
+            break
+        elif status == "processing" or status == "in process":
+            time.sleep(8)
+            continue
+        else:
+            msg = data.get("msg", "") or f"Status: {status}"
+            return None, title, f"No se pudo obtener el audio: {msg}"
+    else:
+        return None, title, "El video tardó demasiado en procesarse. Intenta de nuevo."
 
     # Download the MP3 file
     try:
