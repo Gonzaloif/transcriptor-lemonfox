@@ -3,7 +3,7 @@
 """
 Transcriptor Lemonfox — Servidor web
 API key se lee de la variable de entorno LEMONFOX_API_KEY
-Soporta archivos de audio y URLs de YouTube
+Soporta archivos de audio y URLs de YouTube (via cobalt.tools)
 """
 
 import os
@@ -21,6 +21,7 @@ app = Flask(__name__, static_folder=str(APP_DIR / "static"), static_url_path="/s
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
 
 LEMONFOX_URL = "https://api.lemonfox.ai/v1/audio/transcriptions"
+COBALT_URL = "https://api.cobalt.tools"
 AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".webm", ".mp4", ".ogg", ".flac", ".aac", ".mpga", ".opus"}
 
 
@@ -35,17 +36,15 @@ def send_to_lemonfox(audio_path, filename, language, speaker_labels):
         return None, "API key no configurada en el servidor."
 
     response_format = "verbose_json" if speaker_labels else "text"
-    mime = "audio/mpeg"
-    ext = Path(filename).suffix.lower()
     mime_map = {
         ".m4a": "audio/mp4", ".mp3": "audio/mpeg", ".wav": "audio/wav",
         ".webm": "audio/webm", ".mp4": "audio/mp4", ".ogg": "audio/ogg",
         ".flac": "audio/flac", ".aac": "audio/aac", ".opus": "audio/opus",
     }
+    ext = Path(filename).suffix.lower()
     mime = mime_map.get(ext, "application/octet-stream")
 
     with open(audio_path, "rb") as f:
-        files = {"file": (filename, f, mime)}
         data = {"response_format": response_format}
         if language:
             data["language"] = language
@@ -84,7 +83,6 @@ def send_to_lemonfox(audio_path, filename, language, speaker_labels):
         if resp is None:
             return None, "No se pudo contactar a Lemonfox."
 
-    # Parse response
     if response_format == "text":
         return resp.text.strip(), None
     else:
@@ -103,6 +101,84 @@ def send_to_lemonfox(audio_path, filename, language, speaker_labels):
             lines.append(prefix + txt)
         text = "\n".join(lines) if lines else (rdata.get("text") or "").strip()
         return text, None
+
+
+def download_youtube_audio(url):
+    """Download audio from YouTube using cobalt.tools API. Returns (file_path, title, error)."""
+    try:
+        r = req_lib.post(
+            COBALT_URL,
+            json={
+                "url": url,
+                "audioFormat": "mp3",
+                "isAudioOnly": True,
+                "filenameStyle": "basic",
+            },
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            timeout=30,
+        )
+    except Exception as e:
+        return None, None, f"Error contactando cobalt: {str(e)[:200]}"
+
+    if r.status_code != 200:
+        try:
+            err = r.json()
+            msg = err.get("error", {}).get("code", "") or json.dumps(err, ensure_ascii=False)
+        except Exception:
+            msg = r.text[:300]
+        return None, None, f"Cobalt error: {msg}"
+
+    data = r.json()
+    status = data.get("status", "")
+
+    # cobalt returns a URL to download the audio
+    download_url = None
+    title = "youtube_audio"
+
+    if status == "redirect" or status == "stream":
+        download_url = data.get("url", "")
+    elif status == "tunnel":
+        download_url = data.get("url", "")
+    elif status == "picker":
+        # Multiple options, pick first audio
+        picker = data.get("picker", [])
+        if picker:
+            download_url = picker[0].get("url", "")
+    elif status == "error":
+        err_code = data.get("error", {}).get("code", "unknown")
+        return None, None, f"Cobalt no pudo procesar el video: {err_code}"
+    else:
+        return None, None, f"Respuesta inesperada de cobalt: {status}"
+
+    if not download_url:
+        return None, None, "No se obtuvo URL de descarga de cobalt."
+
+    # Download the actual audio file
+    try:
+        audio_resp = req_lib.get(download_url, timeout=300, stream=True)
+        if audio_resp.status_code != 200:
+            return None, None, f"Error descargando audio: HTTP {audio_resp.status_code}"
+    except Exception as e:
+        return None, None, f"Error descargando audio: {str(e)[:200]}"
+
+    # Save to temp file
+    tmp = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
+    for chunk in audio_resp.iter_content(chunk_size=8192):
+        tmp.write(chunk)
+    tmp.close()
+
+    # Try to extract title from content-disposition or use default
+    cd = audio_resp.headers.get("content-disposition", "")
+    if "filename=" in cd:
+        try:
+            title = cd.split("filename=")[-1].strip('"').rsplit(".", 1)[0]
+        except Exception:
+            pass
+
+    return tmp.name, title, None
 
 
 @app.route("/")
@@ -128,7 +204,6 @@ def transcribe():
     language = request.form.get("language", "spanish")
     speaker_labels = request.form.get("speaker_labels", "false") == "true"
 
-    # Save uploaded file to temp
     with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
         audio.save(tmp)
         tmp_path = tmp.name
@@ -153,65 +228,26 @@ def transcribe_youtube():
     if not url:
         return jsonify({"error": "No se proporcionó URL."}), 400
 
-    # Basic YouTube URL validation
     yt_pattern = r'(youtube\.com/watch|youtu\.be/|youtube\.com/shorts/)'
     if not re.search(yt_pattern, url):
         return jsonify({"error": "URL no parece ser de YouTube."}), 400
 
+    # Download via cobalt
+    audio_path, title, dl_error = download_youtube_audio(url)
+    if dl_error:
+        return jsonify({"error": dl_error}), 400
+
     try:
-        import yt_dlp
-    except ImportError:
-        return jsonify({"error": "yt-dlp no está instalado en el servidor."}), 500
-
-    # Download audio with yt-dlp
-    with tempfile.TemporaryDirectory() as tmpdir:
-        output_template = os.path.join(tmpdir, "audio.%(ext)s")
-        ydl_opts = {
-            "format": "bestaudio/best",
-            "outtmpl": output_template,
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "128",
-            }],
-            "quiet": True,
-            "no_warnings": True,
-            "socket_timeout": 30,
-        }
-
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                title = info.get("title", "youtube_audio")
-        except Exception as e:
-            msg = str(e)
-            if "Private video" in msg:
-                return jsonify({"error": "El video es privado."}), 400
-            if "Video unavailable" in msg:
-                return jsonify({"error": "El video no está disponible."}), 400
-            if "age" in msg.lower():
-                return jsonify({"error": "El video requiere verificación de edad."}), 400
-            return jsonify({"error": f"Error al descargar: {msg[:200]}"}), 400
-
-        # Find the downloaded file
-        audio_file = None
-        for f in Path(tmpdir).iterdir():
-            if f.is_file() and f.suffix.lower() in {".mp3", ".m4a", ".wav", ".webm", ".ogg", ".opus"}:
-                audio_file = f
-                break
-
-        if not audio_file:
-            return jsonify({"error": "No se pudo extraer el audio del video."}), 500
-
-        # Clean title for filename
-        safe_title = re.sub(r'[^\w\s-]', '', title)[:80].strip()
+        safe_title = re.sub(r'[^\w\s-]', '', title or "youtube_audio")[:80].strip()
         filename = f"{safe_title}.mp3"
+        text, tx_error = send_to_lemonfox(audio_path, filename, language, speaker_labels)
+    finally:
+        if audio_path and os.path.exists(audio_path):
+            os.unlink(audio_path)
 
-        text, error = send_to_lemonfox(str(audio_file), filename, language, speaker_labels)
-
-    if error:
-        return jsonify({"error": error}), 500
-    return jsonify({"text": text, "title": title})
+    if tx_error:
+        return jsonify({"error": tx_error}), 500
+    return jsonify({"text": text, "title": title or "YouTube video"})
 
 
 if __name__ == "__main__":
