@@ -107,7 +107,7 @@ def send_to_lemonfox(audio_path, filename, language, speaker_labels):
 
 def extract_video_id(url):
     patterns = [
-        r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/)([a-zA-Z0-9_-]{11})',
+        r'(?:\.com/watch\?v=|youtu\.be/|\.com/shorts/)([a-zA-Z0-9_-]{11})',
     ]
     for p in patterns:
         m = re.search(p, url)
@@ -116,7 +116,7 @@ def extract_video_id(url):
     return None
 
 
-def download_youtube_audio(video_id):
+def download__audio(video_id):
     rapidapi_key = get_rapidapi_key()
     if not rapidapi_key:
         return None, None, "RAPIDAPI_KEY no configurada en el servidor."
@@ -126,11 +126,11 @@ def download_youtube_audio(video_id):
     for poll in range(max_polls):
         try:
             resp = req_lib.get(
-                "https://youtube-mp36.p.rapidapi.com/dl",
+                "https://-mp36.p.rapidapi.com/dl",
                 params={"id": video_id},
                 headers={
                     "x-rapidapi-key": rapidapi_key,
-                    "x-rapidapi-host": "youtube-mp36.p.rapidapi.com",
+                    "x-rapidapi-host": "-mp36.p.rapidapi.com",
                 },
                 timeout=60,
             )
@@ -142,7 +142,7 @@ def download_youtube_audio(video_id):
 
         data = resp.json()
         status = data.get("status", "")
-        title = data.get("title", "youtube_audio")
+        title = data.get("title", "_audio")
         download_link = data.get("link", "")
 
         if status == "ok" and download_link:
@@ -158,16 +158,35 @@ def download_youtube_audio(video_id):
 
     # Download the MP3 file
     try:
-        audio_resp = req_lib.get(download_link, timeout=300, stream=True)
+        audio_resp = req_lib.get(
+            download_link,
+            timeout=300,
+            stream=True,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Referer": "https://youtube-mp36.p.rapidapi.com/",
+            },
+            allow_redirects=True,
+        )
         if audio_resp.status_code != 200:
-            return None, title, f"Error descargando MP3: HTTP {audio_resp.status_code}"
+            return None, title, f"Error descargando MP3: HTTP {audio_resp.status_code} - Intenta de nuevo"
     except Exception as e:
         return None, title, f"Error descargando MP3: {str(e)[:200]}"
+
+    # Verify we got actual audio data
+    content_length = int(audio_resp.headers.get("content-length", 0))
+    if content_length > 0 and content_length < 1000:
+        return None, title, "El archivo descargado es muy pequeño. Intenta con otro video."
 
     tmp = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
     for chunk in audio_resp.iter_content(chunk_size=8192):
         tmp.write(chunk)
     tmp.close()
+
+    # Final size check
+    if os.path.getsize(tmp.name) < 1000:
+        os.unlink(tmp.name)
+        return None, title, "No se pudo descargar el audio correctamente. Intenta de nuevo."
 
     return tmp.name, title, None
 
