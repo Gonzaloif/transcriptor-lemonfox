@@ -53,32 +53,7 @@
   .section { margin-bottom: 24px; animation: fadeUp 0.5s ease both; }
   .section:nth-child(2) { animation-delay: 0.1s; }
   .section:nth-child(3) { animation-delay: 0.15s; }
-  .section:nth-child(4) { animation-delay: 0.2s; }
   .label { display: block; font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
-  .key-status {
-    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-    background: var(--surface); border: 1px solid var(--gold-dim); border-radius: var(--radius);
-  }
-  .key-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .key-dot.active { background: var(--success); box-shadow: 0 0 8px rgba(126,188,106,0.4); }
-  .key-text { flex: 1; font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); }
-  .key-actions { display: flex; gap: 6px; }
-  .btn-sm {
-    padding: 5px 12px; font-size: 11px; font-family: var(--font-display); font-weight: 600;
-    background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2);
-    border-radius: 6px; color: var(--gold); cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
-  }
-  .btn-sm:hover { background: rgba(200,169,126,0.25); }
-  .btn-sm.danger { color: var(--danger); border-color: rgba(180,80,60,0.25); background: var(--danger-bg); }
-  .btn-sm.danger:hover { background: rgba(180,80,60,0.2); }
-  .key-form { display: flex; gap: 8px; }
-  .input {
-    flex: 1; padding: 10px 14px; font-family: var(--font-mono); font-size: 13px;
-    background: var(--surface); border: 1px solid rgba(200,169,126,0.2);
-    border-radius: 8px; color: var(--text); outline: none; transition: border-color 0.2s;
-  }
-  .input:focus { border-color: var(--gold); }
-  .input::placeholder { color: var(--text-faint); }
   .options-row { display: flex; gap: 16px; align-items: flex-end; }
   .select-wrap { flex: 1; }
   .select {
@@ -149,6 +124,12 @@
     font-size: 12px; color: var(--text-faint); cursor: pointer; transition: all 0.2s; margin-top: 10px;
   }
   .queue-add:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-sm {
+    padding: 5px 12px; font-size: 11px; font-family: var(--font-display); font-weight: 600;
+    background: var(--gold-dim); border: 1px solid rgba(200,169,126,0.2);
+    border-radius: 6px; color: var(--gold); cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .btn-sm:hover { background: rgba(200,169,126,0.25); }
   .btn-primary {
     width: 100%; padding: 15px; font-size: 16px; font-weight: 700; font-family: var(--font-display);
     background: linear-gradient(135deg, var(--gold) 0%, #a68b5b 100%);
@@ -215,6 +196,11 @@
     border-top-color: var(--blue); border-radius: 50%;
     animation: spin 0.8s linear infinite; display: inline-block;
   }
+  .error-banner {
+    background: var(--danger-bg); border: 1px solid rgba(180,80,60,0.25);
+    border-radius: var(--radius); padding: 14px 18px; text-align: center;
+    font-size: 14px; color: var(--danger); margin-bottom: 24px;
+  }
   pre::-webkit-scrollbar { width: 6px; }
   pre::-webkit-scrollbar-track { background: transparent; }
   pre::-webkit-scrollbar-thumb { background: rgba(200,169,126,0.2); border-radius: 3px; }
@@ -243,7 +229,7 @@
       <p>Audio a texto con Lemonfox AI</p>
     </div>
   </div>
-  <div class="section" id="key-section"></div>
+  <div id="status-banner"></div>
   <div class="section">
     <div class="options-row">
       <div class="select-wrap">
@@ -272,18 +258,12 @@
   </div>
   <div id="action-area"></div>
   <div id="result-area"></div>
-  <p class="footer">Tu API key se guarda solo en tu navegador · Nunca se almacena en el servidor</p>
+  <p class="footer">Servicio de transcripción · Schoenstatt Chile</p>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ── State ──
-let state = {
-  apiKey: localStorage.getItem('lfx_key') || '',
-  editingKey: false,
-  queue: [],
-  globalStatus: 'idle',
-};
+let state = { ready: false, queue: [], globalStatus: 'idle' };
 let nextId = 1;
 let expandedCards = new Set();
 const VALID_EXTS = ['.m4a','.mp3','.wav','.webm','.mp4','.ogg','.flac','.aac','.mpga'];
@@ -299,33 +279,27 @@ function showToast(m) {
   t.textContent = m; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
-function maskKey(k) {
-  if (!k) return '';
-  if (k.length > 10) return k.slice(0,6) + '•'.repeat(Math.max(0, k.length-10)) + k.slice(-4);
-  return '••••';
+
+// Check server status
+async function checkStatus() {
+  try {
+    const r = await fetch('/api/status');
+    const d = await r.json();
+    state.ready = d.ready;
+  } catch(e) { state.ready = false; }
+  renderBanner();
 }
 
-// ── Key management (localStorage) ──
-function saveKey(key) {
-  state.apiKey = key.trim();
-  localStorage.setItem('lfx_key', state.apiKey);
-  localStorage.setItem('lfx_lang', document.getElementById('language').value);
-  state.editingKey = false;
-  showToast('API key guardada en tu navegador');
-  render();
-}
-function deleteKey() {
-  state.apiKey = '';
-  localStorage.removeItem('lfx_key');
-  showToast('API key eliminada');
-  render();
-}
-function submitKey() {
-  const v = document.getElementById('key-input')?.value?.trim();
-  if (v) saveKey(v);
+function renderBanner() {
+  const el = document.getElementById('status-banner');
+  if (!state.ready) {
+    el.innerHTML = '<div class="error-banner">El servicio no está disponible en este momento.</div>';
+  } else {
+    el.innerHTML = '';
+  }
 }
 
-// ── Files ──
+// Files
 function addFiles(fileList) {
   let added = 0;
   for (const f of fileList) {
@@ -343,9 +317,9 @@ function removeItem(id) {
   render();
 }
 
-// ── Transcription ──
+// Transcription
 async function startQueue() {
-  if (!state.apiKey || !state.queue.length) return;
+  if (!state.ready || !state.queue.length) return;
   state.globalStatus = 'running'; render();
   const lang = document.getElementById('language').value;
   const spk = document.getElementById('speaker-labels').checked;
@@ -369,7 +343,6 @@ function transcribeOne(item, language, speakerLabels) {
     fd.append('file', item.file);
     fd.append('language', language);
     fd.append('speaker_labels', speakerLabels ? 'true' : 'false');
-    fd.append('api_key', state.apiKey);
     const xhr = new XMLHttpRequest();
     xhr.upload.addEventListener('progress', e => {
       if (e.lengthComputable) {
@@ -400,7 +373,7 @@ function retryItem(id) {
   if (state.globalStatus !== 'running') startQueue(); else render();
 }
 
-// ── Downloads ──
+// Downloads
 function dlOne(id) {
   const item = state.queue.find(q => q.id === id);
   if (!item) return;
@@ -427,18 +400,8 @@ function cpAll() {
 function resetAll() { state.queue = []; state.globalStatus = 'idle'; expandedCards.clear(); render(); }
 function toggleCard(id) { expandedCards.has(id) ? expandedCards.delete(id) : expandedCards.add(id); render(); }
 
-// ── Render ──
+// Render
 function render() {
-  const ks = document.getElementById('key-section');
-  if (state.editingKey || !state.apiKey) {
-    ks.innerHTML = '<label class="label">API Key de Lemonfox</label><div class="key-form"><input class="input" type="password" id="key-input" placeholder="lfk_..."><button class="btn-sm" onclick="submitKey()">Guardar</button>' +
-      (state.apiKey ? '<button class="btn-sm" onclick="state.editingKey=false;render()">Cancelar</button>' : '') + '</div>';
-    document.getElementById('key-input')?.addEventListener('keydown', e => { if(e.key==='Enter') submitKey(); });
-  } else {
-    ks.innerHTML = '<label class="label">API Key</label><div class="key-status"><div class="key-dot active"></div><span class="key-text">' + maskKey(state.apiKey) + '</span><div class="key-actions"><button class="btn-sm" onclick="state.editingKey=true;render()">Cambiar</button><button class="btn-sm danger" onclick="deleteKey()">Eliminar</button></div></div>';
-  }
-
-  // Drop zone
   const dz = document.getElementById('drop-zone');
   const dc = document.getElementById('drop-content');
   if (state.queue.length) {
@@ -465,11 +428,9 @@ function render() {
 
   // Actions
   const aa = document.getElementById('action-area');
-  if (state.globalStatus==='idle' && state.queue.length && state.apiKey) {
+  if (state.globalStatus==='idle' && state.queue.length && state.ready) {
     const lbl = state.queue.length===1 ? 'Transcribir' : 'Transcribir '+state.queue.length+' audios';
     aa.innerHTML = '<div class="btn-row"><button class="btn-primary" onclick="startQueue()">'+lbl+'</button><button class="btn-secondary" onclick="resetAll()">Limpiar</button></div>';
-  } else if (state.globalStatus==='idle' && state.queue.length && !state.apiKey) {
-    aa.innerHTML = '<button class="btn-primary" disabled>Configura tu API key primero</button>';
   } else if (state.globalStatus==='running') {
     const done = state.queue.filter(q=>q.status==='done').length;
     const pct = Math.round((done/state.queue.length)*100);
@@ -497,7 +458,7 @@ function render() {
   ra.innerHTML = rh;
 }
 
-// ── Events ──
+// Events
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 dropZone.addEventListener('click', e => { if (!state.queue.length) fileInput.click(); });
@@ -505,13 +466,9 @@ dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classL
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files); });
 fileInput.addEventListener('change', e => { if (e.target.files?.length) addFiles(e.target.files); e.target.value = ''; });
-document.getElementById('language').addEventListener('change', e => localStorage.setItem('lfx_lang', e.target.value));
 
-// ── Init ──
-const savedLang = localStorage.getItem('lfx_lang');
-if (savedLang) document.getElementById('language').value = savedLang;
-render();
+// Init
+checkStatus().then(() => render());
 </script>
 </body>
 </html>
-
