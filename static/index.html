@@ -250,16 +250,30 @@
       <div id="action-area"></div>
     </div>
 
-    <!-- YOUTUBE SOURCE -->
+<!-- YOUTUBE SOURCE -->
     <div id="source-youtube" style="display:none">
       <div class="section">
-        <label class="label">Enlace de YouTube</label>
-        <div class="yt-input-wrap">
-          <input class="yt-input" type="text" id="yt-url" placeholder="https://www.youtube.com/watch?v=...">
-          <button class="btn-primary" style="width:auto;margin:0;padding:12px 24px;font-size:14px" id="yt-btn" onclick="transcribeYoutube()">Transcribir</button>
+        <div style="background:var(--surface);border:1px solid rgba(200,169,126,0.15);border-radius:12px;padding:24px;">
+          <p style="font-size:15px;color:var(--text);margin-bottom:16px;line-height:1.6;">Para transcribir un video de YouTube, sigue estos pasos:</p>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="background:var(--gold-dim);color:var(--gold);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">1</span>
+              <p style="font-size:14px;color:var(--text-dim);line-height:1.5;margin:0;">Copia el enlace del video de YouTube</p>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="background:var(--gold-dim);color:var(--gold);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">2</span>
+              <div>
+                <p style="font-size:14px;color:var(--text-dim);line-height:1.5;margin:0;">Pega el enlace en <strong style="color:var(--gold)">cobalt.tools</strong> y descarga el audio como MP3</p>
+                <a href="https://cobalt.tools" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:8px 16px;background:var(--gold-dim);border:1px solid rgba(200,169,126,0.25);border-radius:8px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;transition:all 0.2s;">Abrir cobalt.tools &rarr;</a>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <span style="background:var(--gold-dim);color:var(--gold);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">3</span>
+              <p style="font-size:14px;color:var(--text-dim);line-height:1.5;margin:0;">Vuelve aquí, cambia a <strong style="color:var(--text)">"Archivo de audio"</strong> y sube el MP3 descargado</p>
+            </div>
+          </div>
         </div>
       </div>
-      <div id="yt-status-area"></div>
     </div>
 
     <div id="result-area"></div>
