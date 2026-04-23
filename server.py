@@ -52,25 +52,34 @@ def send_to_lemonfox(audio_path, filename, language, speaker_labels):
             data["speaker_labels"] = "true"
         headers = {"Authorization": f"Bearer {api_key}"}
 
-        max_attempts = 3
+        max_attempts = 5
         resp = None
+        last_error = None
         for attempt in range(1, max_attempts + 1):
             f.seek(0)
             files = {"file": (filename, f, mime)}
             try:
                 resp = req_lib.post(
                     LEMONFOX_URL, files=files, data=data,
-                    headers=headers, timeout=(15, 900),
+                    headers=headers, timeout=(30, 1200),
                 )
             except req_lib.exceptions.Timeout:
-                return None, "Timeout al contactar Lemonfox."
+                last_error = "Timeout: Lemonfox tardó demasiado en responder (intento %d/%d)." % (attempt, max_attempts)
+                if attempt < max_attempts:
+                    time.sleep(8 * attempt)
+                    continue
+                return None, last_error
             except req_lib.exceptions.ConnectionError:
-                return None, "Error de conexion con Lemonfox."
+                last_error = "Error de conexion con Lemonfox (intento %d/%d)." % (attempt, max_attempts)
+                if attempt < max_attempts:
+                    time.sleep(8 * attempt)
+                    continue
+                return None, last_error
 
             if resp.status_code == 200:
                 break
             if resp.status_code in (429, 500, 502, 503, 504) and attempt < max_attempts:
-                time.sleep(2 ** attempt)
+                time.sleep(8 * attempt)
                 continue
 
             try:
@@ -78,7 +87,7 @@ def send_to_lemonfox(audio_path, filename, language, speaker_labels):
                 msg = body.get("error", {}).get("message", "") or json.dumps(body, ensure_ascii=False)
             except Exception:
                 msg = resp.text[:500]
-            return None, "Error HTTP %d: %s" % (resp.status_code, msg)
+            return None, "Error %d de Lemonfox: %s" % (resp.status_code, msg)
 
         if resp is None:
             return None, "No se pudo contactar a Lemonfox."
