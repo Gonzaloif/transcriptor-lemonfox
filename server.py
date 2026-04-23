@@ -9,6 +9,8 @@ import json
 import time
 import tempfile
 import re
+import threading
+import uuid
 from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory
 import requests as req_lib
@@ -20,6 +22,41 @@ app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
 
 LEMONFOX_URL = "https://api.lemonfox.ai/v1/audio/transcriptions"
 AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".webm", ".mp4", ".ogg", ".flac", ".aac", ".mpga", ".opus"}
+
+# ── Job store (procesamiento asíncrono) ──
+_jobs = {}
+_jobs_lock = threading.Lock()
+
+def _job_set(job_id, **kwargs):
+    with _jobs_lock:
+        _jobs[job_id].update(kwargs)
+
+def _cleanup_old_jobs():
+    cutoff = time.time() - 7200  # 2 horas
+    with _jobs_lock:
+        stale = [jid for jid, j in _jobs.items() if j.get("created_at", 0) < cutoff]
+    for jid in stale:
+        with _jobs_lock:
+            job = _jobs.pop(jid, {})
+        tmp = job.get("tmp_path")
+        if tmp and os.path.exists(tmp):
+            try: os.unlink(tmp)
+            except: pass
+
+def _run_transcription(job_id, tmp_path, filename, language, speaker_labels):
+    try:
+        text, error = send_to_lemonfox(tmp_path, filename, language, speaker_labels)
+        if error:
+            _job_set(job_id, status="error", error=error)
+        else:
+            _job_set(job_id, status="done", text=text)
+    except Exception as e:
+        _job_set(job_id, status="error", error=str(e))
+    finally:
+        try: os.unlink(tmp_path)
+        except: pass
+        # Limpiar jobs viejos de vez en cuando
+        threading.Thread(target=_cleanup_old_jobs, daemon=True).start()
 
 
 def get_api_key():
@@ -245,18 +282,41 @@ def transcribe():
     language = request.form.get("language", "spanish")
     speaker_labels = request.form.get("speaker_labels", "false") == "true"
 
+    # Guardar archivo y lanzar procesamiento en segundo plano
     with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
         audio.save(tmp)
         tmp_path = tmp.name
 
-    try:
-        text, error = send_to_lemonfox(tmp_path, audio.filename, language, speaker_labels)
-    finally:
-        os.unlink(tmp_path)
+    job_id = str(uuid.uuid4())
+    with _jobs_lock:
+        _jobs[job_id] = {
+            "status": "processing",
+            "text": None,
+            "error": None,
+            "tmp_path": tmp_path,
+            "created_at": time.time(),
+        }
 
-    if error:
-        return jsonify({"error": error}), 500
-    return jsonify({"text": text})
+    threading.Thread(
+        target=_run_transcription,
+        args=(job_id, tmp_path, audio.filename, language, speaker_labels),
+        daemon=True,
+    ).start()
+
+    return jsonify({"job_id": job_id})
+
+
+@app.route("/api/job/<job_id>", methods=["GET"])
+def get_job(job_id):
+    with _jobs_lock:
+        job = _jobs.get(job_id)
+    if not job:
+        return jsonify({"error": "Job no encontrado"}), 404
+    return jsonify({
+        "status": job["status"],
+        "text": job.get("text"),
+        "error": job.get("error"),
+    })
 
 
 @app.route("/api/transcribe-youtube", methods=["POST"])

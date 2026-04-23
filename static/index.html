@@ -195,7 +195,22 @@ async function checkStatus(){try{const r=await fetch('/api/status');const d=awai
 function addFiles(fl){let a=0;for(const f of fl){const e='.'+f.name.split('.').pop().toLowerCase();if(!VALID_EXTS.includes(e))continue;if(state.queue.find(q=>q.file.name===f.name&&q.file.size===f.size))continue;state.queue.push({id:nextId++,file:f,status:'pending',progress:0,transcript:'',errorMsg:''});a++}if(a)render()}
 function removeItem(id){state.queue=state.queue.filter(q=>q.id!==id);if(!state.queue.length)state.globalStatus='idle';render()}
 async function startQueue(){if(!state.ready||!state.queue.length)return;state.globalStatus='running';render();const lang=document.getElementById('language').value,spk=document.getElementById('speaker-labels').checked;for(const item of state.queue){if(item.status==='done'||item.status==='error')continue;item.status='uploading';item.progress=0;render();try{item.transcript=await transcribeOne(item,lang,spk);item.status='done';saveToHistory(item.file.name,item.transcript,lang,spk)}catch(e){item.errorMsg=e.message;item.status='error'}render()}state.globalStatus='done';render()}
-function transcribeOne(item,language,speakerLabels){return new Promise((resolve,reject)=>{const fd=new FormData();fd.append('file',item.file);fd.append('language',language);fd.append('speaker_labels',speakerLabels?'true':'false');const xhr=new XMLHttpRequest();xhr.upload.addEventListener('progress',e=>{if(e.lengthComputable){item.progress=Math.round((e.loaded/e.total)*100);if(item.progress>=100)item.status='processing';render()}});xhr.addEventListener('load',()=>{try{const d=JSON.parse(xhr.responseText);if(xhr.status===200&&d.text!==undefined)resolve(d.text);else reject(new Error(d.error||'Error HTTP '+xhr.status))}catch(e){reject(new Error('Respuesta inesperada'))}});xhr.addEventListener('error',()=>reject(new Error('Error de conexión')));xhr.addEventListener('timeout',()=>reject(new Error('Timeout')));xhr.open('POST','/api/transcribe');xhr.timeout=900000;xhr.send(fd)})}
+function pollJob(jobId,item,resolve,reject,attempts){
+  attempts=attempts||0;
+  if(attempts>400){reject(new Error('Timeout: el proceso tardó demasiado'));return;}
+  fetch('/api/job/'+jobId)
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.status==='done'){resolve(d.text);}
+      else if(d.status==='error'){reject(new Error(d.error||'Error en transcripción'));}
+      else{setTimeout(()=>pollJob(jobId,item,resolve,reject,attempts+1),3000);}
+    })
+    .catch(()=>{
+      if(attempts<10){setTimeout(()=>pollJob(jobId,item,resolve,reject,attempts+1),5000);}
+      else{reject(new Error('Error de conexión durante el procesamiento'));}
+    });
+}
+function transcribeOne(item,language,speakerLabels){return new Promise((resolve,reject)=>{const fd=new FormData();fd.append('file',item.file);fd.append('language',language);fd.append('speaker_labels',speakerLabels?'true':'false');const xhr=new XMLHttpRequest();xhr.upload.addEventListener('progress',e=>{if(e.lengthComputable){item.progress=Math.round((e.loaded/e.total)*100);if(item.progress>=100)item.status='processing';render()}});xhr.addEventListener('load',()=>{try{const d=JSON.parse(xhr.responseText);if(xhr.status===200&&d.job_id){pollJob(d.job_id,item,resolve,reject);}else{reject(new Error(d.error||'Error HTTP '+xhr.status));}}catch(e){reject(new Error('Respuesta inesperada'));}});xhr.addEventListener('error',()=>reject(new Error('Error al subir el archivo')));xhr.addEventListener('timeout',()=>reject(new Error('Timeout al subir')));xhr.open('POST','/api/transcribe');xhr.timeout=120000;xhr.send(fd);})}
 function retryItem(id){const item=state.queue.find(q=>q.id===id);if(!item)return;item.status='pending';item.progress=0;item.errorMsg='';if(state.globalStatus!=='running')startQueue();else render()}
 function dlOne(id){const item=state.queue.find(q=>q.id===id);if(!item)return;const blob=new Blob([item.transcript],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=item.file.name.replace(/\.[^.]+$/,'')+'.txt';a.click();URL.revokeObjectURL(url)}
 function dlAll(){state.queue.filter(q=>q.status==='done'&&q.transcript).forEach((item,i)=>{setTimeout(()=>dlOne(item.id),i*150)})}
