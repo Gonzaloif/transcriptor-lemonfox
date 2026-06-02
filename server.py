@@ -11,6 +11,8 @@ import tempfile
 import re
 import threading
 import uuid
+import math
+import subprocess
 from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory
 import requests as req_lib
@@ -44,18 +46,39 @@ def _cleanup_old_jobs():
             except: pass
 
 def _run_transcription(job_id, tmp_path, filename, language, speaker_labels):
+    chunks = []
     try:
-        text, error = send_to_lemonfox(tmp_path, filename, language, speaker_labels)
-        if error:
-            _job_set(job_id, status="error", error=error)
+        ext = Path(filename).suffix.lower()
+        file_size = os.path.getsize(tmp_path)
+
+        if file_size > LEMONFOX_MAX_BYTES:
+            # Archivo grande: dividir en fragmentos de 10 minutos
+            chunks = split_audio(tmp_path, ext, chunk_secs=600) or []
+
+        if chunks:
+            parts = []
+            for i, chunk_path in enumerate(chunks):
+                chunk_name = "%s_part%d%s" % (Path(filename).stem, i + 1, ext)
+                text, error = send_to_lemonfox(chunk_path, chunk_name, language, speaker_labels)
+                if error:
+                    _job_set(job_id, status="error", error="Error en fragmento %d: %s" % (i + 1, error))
+                    return
+                parts.append(text)
+            _job_set(job_id, status="done", text="\n".join(parts))
         else:
-            _job_set(job_id, status="done", text=text)
+            text, error = send_to_lemonfox(tmp_path, filename, language, speaker_labels)
+            if error:
+                _job_set(job_id, status="error", error=error)
+            else:
+                _job_set(job_id, status="done", text=text)
     except Exception as e:
         _job_set(job_id, status="error", error=str(e))
     finally:
         try: os.unlink(tmp_path)
         except: pass
-        # Limpiar jobs viejos de vez en cuando
+        for c in chunks:
+            try: os.unlink(c)
+            except: pass
         threading.Thread(target=_cleanup_old_jobs, daemon=True).start()
 
 
@@ -66,6 +89,44 @@ def get_api_key():
 def get_rapidapi_key():
     return os.environ.get("RAPIDAPI_KEY", "").strip()
 
+
+LEMONFOX_MAX_BYTES = 23 * 1024 * 1024  # 23 MB — margen bajo el límite de 25 MB
+
+def get_audio_duration(path):
+    """Retorna duración en segundos usando ffprobe, o None si falla."""
+    try:
+        r = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", path],
+            capture_output=True, text=True, timeout=30
+        )
+        return float(r.stdout.strip())
+    except Exception:
+        return None
+
+def split_audio(path, ext, chunk_secs=600):
+    """Divide el audio en fragmentos de chunk_secs segundos. Retorna lista de rutas tmp."""
+    duration = get_audio_duration(path)
+    if duration is None:
+        return None
+    n = math.ceil(duration / chunk_secs)
+    if n <= 1:
+        return None
+    chunks = []
+    for i in range(n):
+        start = i * chunk_secs
+        tmp = tempfile.NamedTemporaryFile(suffix=ext, delete=False)
+        tmp.close()
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", path, "-ss", str(start), "-t", str(chunk_secs),
+             "-acodec", "copy", tmp.name],
+            capture_output=True, timeout=180
+        )
+        if os.path.getsize(tmp.name) > 0:
+            chunks.append(tmp.name)
+        else:
+            os.unlink(tmp.name)
+    return chunks if chunks else None
 
 def send_to_lemonfox(audio_path, filename, language, speaker_labels):
     api_key = get_api_key()
