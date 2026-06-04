@@ -11,4 +11,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["python", "server.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout", "600", "--worker-class", "sync", "--workers", "1", "server:app"]
